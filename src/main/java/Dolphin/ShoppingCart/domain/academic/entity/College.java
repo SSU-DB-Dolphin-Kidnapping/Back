@@ -1,7 +1,6 @@
 package Dolphin.ShoppingCart.domain.academic.entity;
 
 import Dolphin.ShoppingCart.domain.model.entity.BaseEntity;
-import Dolphin.ShoppingCart.domain.academic.entity.Department;
 
 import jakarta.persistence.*;
 import lombok.*;
