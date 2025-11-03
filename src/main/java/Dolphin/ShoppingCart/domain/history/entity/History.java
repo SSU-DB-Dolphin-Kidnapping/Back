@@ -1,4 +1,37 @@
 package Dolphin.ShoppingCart.domain.history.entity;
 
-public class History {
+import Dolphin.ShoppingCart.domain.model.entity.BaseEntity;
+import Dolphin.ShoppingCart.domain.student.entity.Student;
+import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.annotations.DynamicUpdate;
+
+@Entity
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@DynamicInsert
+@DynamicUpdate
+public class History extends BaseEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    // Bucket과 직접 FK 연결 없음 (ERD 반영)
+    @Column(name = "bucket_id")
+    private Long bucketId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "student_id")
+    private Student student;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "test_id")
+    private Test test;
+
+    private Boolean isSuccess;
+    private String failedReason;
 }
