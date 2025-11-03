@@ -42,7 +42,7 @@ public class Teach extends BaseEntity {
     private String className; // 분반명
 
     @Enumerated(EnumType.STRING)
-    private TeachType type;   // 강의 유형(오프라인 등)
+    private TeachType type;   // 강의 유형
 
     private Integer maxCount;
     private Integer enrolledCount;

@@ -1,6 +1,7 @@
 package Dolphin.ShoppingCart.domain.academic.entity;
 
 import Dolphin.ShoppingCart.domain.model.entity.BaseEntity;
+import Dolphin.ShoppingCart.domain.student.entity.Student;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
@@ -30,4 +31,7 @@ public class Department extends BaseEntity {
 
     @OneToMany(mappedBy = "department", fetch = FetchType.LAZY)
     private List<Professor> professors;
+
+    @OneToMany(mappedBy = "department", fetch = FetchType.LAZY)
+    private List<Student> students;
 }

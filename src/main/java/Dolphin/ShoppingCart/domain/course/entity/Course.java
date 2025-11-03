@@ -26,9 +26,10 @@ public class Course extends BaseEntity {
     private String name;
 
     @Enumerated(EnumType.STRING)
-    private MajorType majority; // 전필/전선/교양 등 ENUM 타입
+    private MajorType majority;
 
-    private Float time;   // 시수
+    private Float time;
+
     private Float credit; // 학점
 
     @OneToMany(mappedBy = "course", fetch = FetchType.LAZY)

@@ -27,7 +27,7 @@ public class TeachInfo extends BaseEntity {
     private Teach teach;
 
     @Enumerated(EnumType.STRING)
-    private DayOfWeekType dayOfTheWeek; // 월/화/수/목/금
+    private DayOfWeekType dayOfTheWeek;
 
     private LocalTime startTime;
     private LocalTime endTime;

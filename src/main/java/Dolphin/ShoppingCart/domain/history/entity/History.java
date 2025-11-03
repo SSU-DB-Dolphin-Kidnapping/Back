@@ -1,6 +1,7 @@
 package Dolphin.ShoppingCart.domain.history.entity;
 
 import Dolphin.ShoppingCart.domain.model.entity.BaseEntity;
+import Dolphin.ShoppingCart.domain.student.entity.BucketElement;
 import Dolphin.ShoppingCart.domain.student.entity.Student;
 import jakarta.persistence.*;
 import lombok.*;
@@ -20,9 +21,9 @@ public class History extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Bucket과 직접 FK 연결 없음 (ERD 반영)
-    @Column(name = "bucket_id")
-    private Long bucketId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "bucket_element_id", nullable = false)
+    private BucketElement bucketElement;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "student_id")

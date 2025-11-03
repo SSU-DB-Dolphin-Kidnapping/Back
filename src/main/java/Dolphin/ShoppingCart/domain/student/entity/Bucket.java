@@ -25,7 +25,7 @@ public class Bucket extends BaseEntity {
     @JoinColumn(name = "student_id")
     private Student student;
 
-    private Integer plan; // 플랜 번호
+    private Integer plan;
     private String name;
 
     @OneToMany(mappedBy = "bucket", fetch = FetchType.LAZY)

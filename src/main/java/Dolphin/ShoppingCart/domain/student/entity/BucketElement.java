@@ -1,11 +1,14 @@
 package Dolphin.ShoppingCart.domain.student.entity;
 
 import Dolphin.ShoppingCart.domain.course.entity.Teach;
+import Dolphin.ShoppingCart.domain.history.entity.History;
 import Dolphin.ShoppingCart.domain.model.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
+
+import java.util.List;
 
 @Entity
 @Getter
@@ -30,4 +33,7 @@ public class BucketElement extends BaseEntity {
 
     private Boolean isSuccess;
     private Integer priority;
+
+    @OneToMany(mappedBy = "bucketElement", fetch = FetchType.LAZY)
+    private List<History> histories;
 }

@@ -26,5 +26,5 @@ public class CourseType extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private SecondMajorType secondMajor; // 복수/부전공/교양 등 ENUM
+    private SecondMajorType secondMajor;
 }

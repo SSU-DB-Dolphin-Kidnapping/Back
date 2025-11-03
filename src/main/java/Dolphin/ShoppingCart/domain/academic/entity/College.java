@@ -25,6 +25,6 @@ public class College extends BaseEntity {
     @Column(nullable = false, length = 50)
     private String name;
 
-    @OneToMany(mappedBy = "college", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "college", fetch = FetchType.LAZY)
     private List<Department> departments;
 }
