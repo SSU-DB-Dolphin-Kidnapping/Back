@@ -1,0 +1,48 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      DEPLOY_DB_URL: ${{ secrets.DEPLOY_DB_URL }}
+      DEPLOY_DB_USERNAME: ${{ secrets.DEPLOY_DB_USERNAME }}
+      DEPLOY_DB_PASSWORD: ${{ secrets.DEPLOY_DB_PASSWORD }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build with Gradle (skip tests)
+        run: ./gradlew clean build -x test
+
+      - name: Upload JAR to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_KEY }}
+          source: "build/libs/ShoppingCart-0.0.1-SNAPSHOT.jar"
+          target: "/home/ubuntu/app/jar/"
+
+      - name: Restart app on EC2
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_KEY }}
+          script: |
+            echo "Running deploy script..."
+            bash /home/ubuntu/app/deploy.sh
