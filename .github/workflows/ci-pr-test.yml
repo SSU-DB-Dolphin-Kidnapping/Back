@@ -19,7 +19,7 @@ jobs:
           java-version: '17'
 
       - name: Permission for gradlew
-        run: chmod +x Back/gradlew
+        run: chmod +x ./gradlew
 
       - name: Build with Gradle (skip tests)
         run: cd Back && ./gradlew clean build -x test
