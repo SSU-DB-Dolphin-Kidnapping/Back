@@ -19,10 +19,10 @@ jobs:
           java-version: '17'
 
       - name: Permission for gradlew
-        run: chmod +x ./gradlew
+        run: chmod +x ./gradlew    
 
       - name: Build with Gradle (skip tests)
-        run: cd Back && ./gradlew clean build -x test
-
-      - name: Check deploy.sh syntax
-        run: bash -n Back/app/deploy.sh
+        run: ./gradlew clean build -x test  
+        
+      - name: Check deploy script syntax
+        run: bash -n app/deploy.sh
