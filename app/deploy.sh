@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "============================"
-echo "🚀 Deploy Script Start"
+echo "Deploy Script Start"
 echo "============================"
 
 APP_HOME="/home/ubuntu/app"
