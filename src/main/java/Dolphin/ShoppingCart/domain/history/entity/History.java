@@ -25,9 +25,6 @@ public class History extends BaseEntity {
     @JoinColumn(name = "bucket_element_id", nullable = false)
     private BucketElement bucketElement;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "student_id")
-    private Student student;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "test_id")

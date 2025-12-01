@@ -31,8 +31,11 @@ public class BucketElement extends BaseEntity {
     @JoinColumn(name = "bucket_id")
     private Bucket bucket;
 
-    private Boolean isSuccess;
     private Integer priority;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sub_element_id")
+    private BucketElement subElement; // 대체과목
 
     @OneToMany(mappedBy = "bucketElement", fetch = FetchType.LAZY)
     private List<History> histories;
