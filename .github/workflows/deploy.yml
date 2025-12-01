@@ -51,4 +51,4 @@ jobs:
             export DEPLOY_DB_USERNAME="${{ secrets.DEPLOY_DB_USERNAME }}"
             export DEPLOY_DB_PASSWORD="${{ secrets.DEPLOY_DB_PASSWORD }}"
 
-            bash /home/ubuntu/app/deploy.sh  
+            bash /home/ubuntu/app/deploy.sh
