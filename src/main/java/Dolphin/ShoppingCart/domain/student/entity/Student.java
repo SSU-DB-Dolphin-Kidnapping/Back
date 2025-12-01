@@ -35,6 +35,11 @@ public class Student extends BaseEntity {
     @Column(nullable = false)
     private String studentName;
 
+    @Column(name = "avg_reaction_time")
+    private Double avgReactionTime;
+
+    private Long bestBucket; // 대표 장바구니 번호
+
     @OneToMany(mappedBy = "student", fetch = FetchType.LAZY)
     private List<Bucket> buckets;
 }

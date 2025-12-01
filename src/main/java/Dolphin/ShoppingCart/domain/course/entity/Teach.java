@@ -44,8 +44,9 @@ public class Teach extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private TeachType type;   // 강의 유형
 
-    private Integer maxCount;
-    private Integer enrolledCount;
+    private Integer maxCount; // 최대 인원
+    private Integer enrolledCount; // 담은 인원
+    private Integer remainCount; // 잔여 인원
 
     @OneToMany(mappedBy = "teach", fetch = FetchType.LAZY)
     private List<TeachInfo> teachInfos;
