@@ -25,6 +25,6 @@ fi
 echo ">>> Start new application"
 nohup java -jar $JAR_PATH \
   --spring.profiles.active=prod \
-  > $LOG_PATH 2>&1 &
+  > $LOG_PATH 2>&1 < /dev/null &
 
 echo ">>> Deployment complete!"
