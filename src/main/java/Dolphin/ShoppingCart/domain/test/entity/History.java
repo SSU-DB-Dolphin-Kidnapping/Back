@@ -10,8 +10,6 @@ import org.hibernate.annotations.DynamicUpdate;
 @Entity
 @Getter
 @NoArgsConstructor
-@AllArgsConstructor
-@Builder
 @DynamicInsert
 @DynamicUpdate
 public class History extends BaseEntity {
@@ -24,11 +22,29 @@ public class History extends BaseEntity {
     @JoinColumn(name = "bucket_element_id", nullable = false)
     private BucketElement bucketElement;
 
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "test_id")
     private Test test;
 
     private Boolean isSuccess;
+
     private String failedReason;
+
+    @Builder
+    private History(BucketElement bucketElement, Test test, Boolean isSuccess, String failedReason) {
+        this.bucketElement = bucketElement;
+        this.test = test;
+        this.isSuccess = isSuccess;
+        this.failedReason = failedReason;
+    }
+
+    public static History create(BucketElement bucketElement, Test test, Boolean isSuccess, String failedReason) {
+        return History.builder()
+                .bucketElement(bucketElement)
+                .test(test)
+                .isSuccess(isSuccess)
+                .failedReason(failedReason)
+                .build();
+    }
+
 }
