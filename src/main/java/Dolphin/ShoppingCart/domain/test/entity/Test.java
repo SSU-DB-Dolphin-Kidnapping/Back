@@ -9,8 +9,6 @@ import org.hibernate.annotations.DynamicUpdate;
 @Entity
 @Getter
 @NoArgsConstructor
-@AllArgsConstructor
-@Builder
 @DynamicInsert
 @DynamicUpdate
 public class Test extends BaseEntity {
@@ -18,8 +16,5 @@ public class Test extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    private Boolean isSuccess;
-
 
 }

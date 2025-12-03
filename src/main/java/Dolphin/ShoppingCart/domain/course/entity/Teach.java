@@ -53,4 +53,20 @@ public class Teach extends BaseEntity {
 
     @OneToMany(mappedBy = "teach", fetch = FetchType.LAZY)
     private List<BucketElement> bucketElements;
+
+    // 시뮬레이션을 위한 카운트 초기화
+    public void resetCounts() {
+        this.enrolledCount = 0;
+        this.remainCount = this.maxCount;
+    }
+
+    // 수강신청 성공 시 카운트 증가 (비관적 락으로 동시성 제어)
+    public boolean tryEnroll() {
+        if (this.remainCount > 0) {
+            this.enrolledCount++;
+            this.remainCount--;
+            return true;
+        }
+        return false;
+    }
 }
