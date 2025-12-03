@@ -46,6 +46,8 @@ public class TestResponseDTO {
         private Integer totalCourses;
         private Integer successCount;
         private Integer failCount;
+        private Float plannedCredit;
+        private Float earnedCredit;
         private List<CourseResultDTO> courses;
     }
 
@@ -57,6 +59,7 @@ public class TestResponseDTO {
         private String courseName;
         private String className;
         private String professorName;
+        private Float credit;
         private Boolean isSuccess;
         private String failedReason;
         private Integer priority;

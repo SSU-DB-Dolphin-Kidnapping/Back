@@ -64,6 +64,15 @@ public class TestConverter {
                 .filter(h -> !h.getIsSuccess())
                 .count();
 
+        float plannedCredit = (float) bucket.getBucketElements().stream()
+                .mapToDouble(element -> element.getTeach().getCourse().getCredit())
+                .sum();
+
+        float earnedCredit = (float) histories.stream()
+                .filter(History::getIsSuccess)
+                .mapToDouble(history -> history.getBucketElement().getTeach().getCourse().getCredit())
+                .sum();
+
         return TestResponseDTO.TestDetailDTO.builder()
                 .testId(test.getId())
                 .testDate(test.getCreatedAt())
@@ -72,6 +81,8 @@ public class TestConverter {
                 .totalCourses(histories.size())
                 .successCount((int) successCount)
                 .failCount((int) failCount)
+                .plannedCredit(plannedCredit)
+                .earnedCredit(earnedCredit)
                 .courses(courseResults)
                 .build();
     }
@@ -81,6 +92,7 @@ public class TestConverter {
                 .courseName(history.getBucketElement().getTeach().getCourse().getName())
                 .className(history.getBucketElement().getTeach().getClassName())
                 .professorName(history.getBucketElement().getTeach().getProfessor().getProfessorName())
+                .credit(history.getBucketElement().getTeach().getCourse().getCredit())
                 .isSuccess(history.getIsSuccess())
                 .failedReason(history.getFailedReason())
                 .priority(history.getBucketElement().getPriority())
