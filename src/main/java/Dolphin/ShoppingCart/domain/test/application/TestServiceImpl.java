@@ -1,10 +1,10 @@
-package Dolphin.ShoppingCart.domain.history.application;
+package Dolphin.ShoppingCart.domain.test.application;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class HistoryServiceImpl implements HistoryService {
+public class TestServiceImpl implements TestService {
 
 }

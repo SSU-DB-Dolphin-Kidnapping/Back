@@ -1,4 +1,4 @@
-package Dolphin.ShoppingCart.domain.history.entity;
+package Dolphin.ShoppingCart.domain.test.entity;
 
 import Dolphin.ShoppingCart.global.entity.BaseEntity;
 import jakarta.persistence.*;
