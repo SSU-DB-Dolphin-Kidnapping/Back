@@ -17,6 +17,7 @@ PID=$(pgrep -f ShoppingCart-0.0.1-SNAPSHOT.jar)
 if [ -n "$PID" ]; then
   echo ">>> Killing PID: $PID"
   kill -9 $PID
+  sleep 5
 else
   echo ">>> No running application found"
 fi
@@ -24,6 +25,6 @@ fi
 echo ">>> Start new application"
 nohup java -jar $JAR_PATH \
   --spring.profiles.active=prod \
-  > $LOG_PATH 2>&1 &
+  > $LOG_PATH 2>&1 < /dev/null &
 
 echo ">>> Deployment complete!"
