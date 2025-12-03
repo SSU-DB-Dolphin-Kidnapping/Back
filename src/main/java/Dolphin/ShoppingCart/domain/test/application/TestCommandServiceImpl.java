@@ -1,6 +1,7 @@
 package Dolphin.ShoppingCart.domain.test.application;
 
 import Dolphin.ShoppingCart.domain.course.entity.Teach;
+import Dolphin.ShoppingCart.domain.course.entity.TeachInfo;
 import Dolphin.ShoppingCart.domain.course.repository.TeachRepository;
 import Dolphin.ShoppingCart.domain.student.entity.Bucket;
 import Dolphin.ShoppingCart.domain.student.entity.BucketElement;
@@ -88,13 +89,18 @@ public class TestCommandServiceImpl implements TestCommandService {
         for (SimulationTask task : tasks) {
             waitForReactionTime(task.student);
 
+            // 각 학생별로 등록된 과목의 시간대 추적
+            List<Teach> enrolledTeaches = new ArrayList<>();
+
             for (BucketElement element : task.bucket.getBucketElements()) {
-                RegistrationResult registrationResult = tryRegisterCourse(element);
+                RegistrationResult registrationResult = tryRegisterCourse(element, enrolledTeaches);
 
                 saveHistory(element, test, registrationResult);
 
                 if (registrationResult.enrolled) {
                     totalSuccess++;
+                    // 성공한 경우 등록된 과목 추가
+                    enrolledTeaches.add(registrationResult.enrolledTeach);
                 } else {
                     totalFail++;
                 }
@@ -115,18 +121,33 @@ public class TestCommandServiceImpl implements TestCommandService {
         }
     }
 
-    private RegistrationResult tryRegisterCourse(BucketElement element) {
+    private RegistrationResult tryRegisterCourse(BucketElement element, List<Teach> enrolledTeaches) {
         BucketElement current = element;
+        String lastFailReason = null;
 
         while (current != null) {
             Teach teach = current.getTeach();
 
+            // 시간대 충돌 체크
+            if (hasTimeConflict(teach, enrolledTeaches)) {
+                log.info("  ✗ {} - 실패 (시간대 충돌)", teach.getCourse().getName());
+                lastFailReason = "신청하려는 시간대에 이미 과목이 있습니다";
+                current = current.getSubElement();
+
+                if (current != null) {
+                    log.info("    → 대체 과목 시도: {}", current.getTeach().getCourse().getName());
+                }
+                continue;
+            }
+
+            // 정원 체크
             if (teach.tryEnroll()) {
                 log.info("  ✓ {} - 성공", teach.getCourse().getName());
-                return new RegistrationResult(true, null);
+                return new RegistrationResult(true, null, teach);
             }
 
             log.info("  ✗ {} - 실패 (정원 초과)", teach.getCourse().getName());
+            lastFailReason = "정원 초과";
             current = current.getSubElement();
 
             if (current != null) {
@@ -134,7 +155,37 @@ public class TestCommandServiceImpl implements TestCommandService {
             }
         }
 
-        return new RegistrationResult(false, "정원 초과");
+        // 마지막으로 시도한 과목의 실패 사유 반환
+        return new RegistrationResult(false, lastFailReason != null ? lastFailReason : "정원 초과", null);
+    }
+
+    private boolean hasTimeConflict(Teach newTeach, List<Teach> enrolledTeaches) {
+        List<TeachInfo> newTeachInfos = newTeach.getTeachInfos();
+
+        for (Teach enrolledTeach : enrolledTeaches) {
+            List<TeachInfo> enrolledTeachInfos = enrolledTeach.getTeachInfos();
+
+            for (TeachInfo newInfo : newTeachInfos) {
+                for (TeachInfo enrolledInfo : enrolledTeachInfos) {
+                    // 같은 요일인지 확인
+                    if (newInfo.getDayOfTheWeek().equals(enrolledInfo.getDayOfTheWeek())) {
+                        // 시간이 겹치는지 확인
+                        if (isTimeOverlap(newInfo.getStartTime(), newInfo.getEndTime(),
+                                enrolledInfo.getStartTime(), enrolledInfo.getEndTime())) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private boolean isTimeOverlap(java.time.LocalTime start1, java.time.LocalTime end1,
+                                   java.time.LocalTime start2, java.time.LocalTime end2) {
+        // 두 시간대가 겹치는지 확인: start1 < end2 && start2 < end1
+        return start1.isBefore(end2) && start2.isBefore(end1);
     }
 
     private void saveHistory(BucketElement element, Test test, RegistrationResult result) {
@@ -171,10 +222,12 @@ public class TestCommandServiceImpl implements TestCommandService {
     private static class RegistrationResult {
         boolean enrolled;
         String failReason;
+        Teach enrolledTeach;
 
-        RegistrationResult(boolean enrolled, String failReason) {
+        RegistrationResult(boolean enrolled, String failReason, Teach enrolledTeach) {
             this.enrolled = enrolled;
             this.failReason = failReason;
+            this.enrolledTeach = enrolledTeach;
         }
     }
 }
