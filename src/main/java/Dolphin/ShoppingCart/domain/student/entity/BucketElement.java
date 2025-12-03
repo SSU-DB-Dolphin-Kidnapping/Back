@@ -2,7 +2,7 @@ package Dolphin.ShoppingCart.domain.student.entity;
 
 import Dolphin.ShoppingCart.domain.course.entity.Teach;
 import Dolphin.ShoppingCart.domain.history.entity.History;
-import Dolphin.ShoppingCart.domain.model.entity.BaseEntity;
+import Dolphin.ShoppingCart.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.DynamicInsert;

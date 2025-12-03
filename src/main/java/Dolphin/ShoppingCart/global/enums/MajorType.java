@@ -1,4 +1,4 @@
-package Dolphin.ShoppingCart.domain.model.enums;
+package Dolphin.ShoppingCart.global.enums;
 
 public enum MajorType {
     MAJOR_REQUIRED("전공필수"),

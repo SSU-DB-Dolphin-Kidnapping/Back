@@ -1,4 +1,4 @@
-package Dolphin.ShoppingCart.domain.model.enums;
+package Dolphin.ShoppingCart.global.enums;
 
 public enum DayOfWeekType {
     MONDAY("월요일"),
