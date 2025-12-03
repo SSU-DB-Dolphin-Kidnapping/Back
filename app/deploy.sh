@@ -17,6 +17,7 @@ PID=$(pgrep -f ShoppingCart-0.0.1-SNAPSHOT.jar)
 if [ -n "$PID" ]; then
   echo ">>> Killing PID: $PID"
   kill -9 $PID
+  sleep 5
 else
   echo ">>> No running application found"
 fi
