@@ -60,7 +60,7 @@ public class Teach extends BaseEntity {
         this.remainCount = this.maxCount;
     }
 
-    // 수강신청 성공 시 카운트 증가
+    // 수강신청 성공 시 카운트 증가 (비관적 락으로 동시성 제어)
     public boolean tryEnroll() {
         if (this.remainCount > 0) {
             this.enrolledCount++;
