@@ -2,8 +2,8 @@ package Dolphin.ShoppingCart.domain.course.entity;
 
 import Dolphin.ShoppingCart.domain.academic.entity.Professor;
 import Dolphin.ShoppingCart.global.entity.BaseEntity;
-import Dolphin.ShoppingCart.global.enums.SemesterType;
-import Dolphin.ShoppingCart.global.enums.TeachType;
+import Dolphin.ShoppingCart.domain.course.enums.SemesterType;
+import Dolphin.ShoppingCart.domain.course.enums.TeachType;
 import Dolphin.ShoppingCart.domain.student.entity.BucketElement;
 import jakarta.persistence.*;
 import lombok.*;

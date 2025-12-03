@@ -1,7 +1,7 @@
 package Dolphin.ShoppingCart.domain.course.entity;
 
 import Dolphin.ShoppingCart.global.entity.BaseEntity;
-import Dolphin.ShoppingCart.global.enums.DayOfWeekType;
+import Dolphin.ShoppingCart.domain.course.enums.DayOfWeekType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.DynamicInsert;

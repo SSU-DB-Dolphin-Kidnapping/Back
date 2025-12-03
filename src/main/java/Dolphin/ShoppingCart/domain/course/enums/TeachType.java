@@ -1,4 +1,4 @@
-package Dolphin.ShoppingCart.global.enums;
+package Dolphin.ShoppingCart.domain.course.enums;
 
 public enum TeachType {
     OFFLINE("오프라인"),
