@@ -1,6 +1,6 @@
 package Dolphin.ShoppingCart.domain.student.entity;
 
-import Dolphin.ShoppingCart.domain.model.entity.BaseEntity;
+import Dolphin.ShoppingCart.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.DynamicInsert;

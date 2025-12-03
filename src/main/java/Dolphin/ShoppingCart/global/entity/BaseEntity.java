@@ -1,4 +1,4 @@
-package Dolphin.ShoppingCart.domain.model.entity;
+package Dolphin.ShoppingCart.global.entity;
 
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;

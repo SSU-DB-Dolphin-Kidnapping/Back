@@ -1,4 +1,4 @@
-package Dolphin.ShoppingCart.domain.model.enums;
+package Dolphin.ShoppingCart.domain.course.enums;
 
 public enum SecondMajorType {
     DOUBLE_MAJOR("복수전공"),

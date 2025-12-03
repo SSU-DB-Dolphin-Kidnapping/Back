@@ -1,4 +1,4 @@
-package Dolphin.ShoppingCart.domain.history.api;
+package Dolphin.ShoppingCart.domain.test.api;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/history-")
+@RequestMapping("/test")
 @Validated
-public class HistoryController {
+public class TestController {
 }

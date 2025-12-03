@@ -1,12 +1,10 @@
-package Dolphin.ShoppingCart.domain.history.entity;
+package Dolphin.ShoppingCart.domain.test.entity;
 
-import Dolphin.ShoppingCart.domain.model.entity.BaseEntity;
+import Dolphin.ShoppingCart.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Getter
