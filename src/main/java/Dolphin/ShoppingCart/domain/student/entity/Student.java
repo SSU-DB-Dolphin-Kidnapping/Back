@@ -73,4 +73,7 @@ public class Student extends BaseEntity {
         this.studentNumber = studentNumber;
     }
 
+    public void changeBestBucket(Long bucketId) {
+        this.bestBucket = bucketId;
+    }
 }
