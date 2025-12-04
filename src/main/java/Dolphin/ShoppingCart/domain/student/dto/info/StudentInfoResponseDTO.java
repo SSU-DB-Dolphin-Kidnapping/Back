@@ -17,4 +17,6 @@ public class StudentInfoResponseDTO {
     private Long departmentId;
     private Double avgReactionTime;
     private Long bestBucket;
+    private String soongsilEmail;
+    private Boolean verified;
 }
