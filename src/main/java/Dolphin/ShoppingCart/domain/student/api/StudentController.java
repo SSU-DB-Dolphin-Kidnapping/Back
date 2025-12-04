@@ -3,6 +3,7 @@ package Dolphin.ShoppingCart.domain.student.api;
 import Dolphin.ShoppingCart.domain.student.dto.info.StudentInfoResponseDTO;
 import Dolphin.ShoppingCart.domain.student.dto.login.StudentLoginRequestDTO;
 import Dolphin.ShoppingCart.domain.student.dto.login.StudentLoginResponseDTO;
+import Dolphin.ShoppingCart.domain.student.dto.onboarding.StudentOnboardingRequestDTO;
 import Dolphin.ShoppingCart.domain.student.dto.signup.StudentSignUpRequestDTO;
 import Dolphin.ShoppingCart.domain.student.dto.signup.StudentSignUpResponseDTO;
 import Dolphin.ShoppingCart.domain.student.dto.update.StudentUpdateRequestDTO;
@@ -91,5 +92,20 @@ public class StudentController {
     ) {
         StudentInfoResponseDTO result = studentService.updateStudentInfo(studentId, requestDTO);
         return BaseResponse.onSuccess(SuccessStatus.STUDENT_UPDATE_SUCCESS, result);
+    }
+
+
+    @PatchMapping("/{studentId}/onboarding")
+    @Operation(summary = "학생 온보딩 API",
+            description = "학부, 학과, 학년, 학번 정보를 입력해서 저장합니다. (현재는 OCR 없이 직접 입력)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "STUDENT2005", description = "학생 온보딩 정보가 성공적으로 저장되었습니다.")
+    })
+    public BaseResponse<StudentInfoResponseDTO> onboarding(
+            @PathVariable Long studentId,
+            @Valid @RequestBody StudentOnboardingRequestDTO requestDTO
+    ) {
+        StudentInfoResponseDTO result = studentService.onboarding(studentId, requestDTO);
+        return BaseResponse.onSuccess(SuccessStatus.STUDENT_ONBOARDING_SUCCESS, result);
     }
 }

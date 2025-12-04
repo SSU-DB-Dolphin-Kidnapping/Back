@@ -20,7 +20,8 @@ public enum ErrorStatus implements BaseErrorCode {
     STUDENT_LOGIN_FAILED(HttpStatus.UNAUTHORIZED, "STUDENT4011", "닉네임 또는 비밀번호가 올바르지 않습니다."),
     STUDENT_NOT_FOUND(HttpStatus.NOT_FOUND, "STUDENT4041", "해당 학생을 찾을 수 없습니다."),
     DEPARTMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "DEPARTMENT4041", "해당 학과를 찾을 수 없습니다."),
-
+    STUDENT_NUMBER_DUPLICATED(HttpStatus.CONFLICT, "STUDENT4092", "이미 등록된 학번입니다."),
+    COLLEGE_NOT_FOUND(HttpStatus.NOT_FOUND, "COLLEGE4041", "해당 학부를 찾을 수 없습니다."),
     ;
 
     private final HttpStatus httpStatus;

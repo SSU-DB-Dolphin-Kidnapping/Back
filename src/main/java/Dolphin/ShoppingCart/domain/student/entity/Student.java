@@ -68,4 +68,9 @@ public class Student extends BaseEntity {
     public void updateDepartment(Department department) {
         this.department = department;
     }
+
+    public void updateStudentNumber(String studentNumber) {
+        this.studentNumber = studentNumber;
+    }
+
 }

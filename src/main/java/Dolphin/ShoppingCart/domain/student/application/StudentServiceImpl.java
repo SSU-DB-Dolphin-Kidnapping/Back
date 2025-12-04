@@ -1,11 +1,14 @@
 package Dolphin.ShoppingCart.domain.student.application;
 
+import Dolphin.ShoppingCart.domain.academic.entity.College;
 import Dolphin.ShoppingCart.domain.academic.entity.Department;
+import Dolphin.ShoppingCart.domain.academic.repository.CollegeRepository;
 import Dolphin.ShoppingCart.domain.academic.repository.DepartmentRepository;
 import Dolphin.ShoppingCart.domain.student.converter.StudentConverter;
 import Dolphin.ShoppingCart.domain.student.dto.info.StudentInfoResponseDTO;
 import Dolphin.ShoppingCart.domain.student.dto.login.StudentLoginRequestDTO;
 import Dolphin.ShoppingCart.domain.student.dto.login.StudentLoginResponseDTO;
+import Dolphin.ShoppingCart.domain.student.dto.onboarding.StudentOnboardingRequestDTO;
 import Dolphin.ShoppingCart.domain.student.dto.signup.StudentSignUpRequestDTO;
 import Dolphin.ShoppingCart.domain.student.dto.signup.StudentSignUpResponseDTO;
 import Dolphin.ShoppingCart.domain.student.dto.update.StudentUpdateRequestDTO;
@@ -24,6 +27,7 @@ public class StudentServiceImpl implements StudentService {
 
     private final StudentRepository studentRepository; // 생성자 주입
     private final DepartmentRepository departmentRepository;
+    private final CollegeRepository collegeRepository;
 
     @Transactional(readOnly = true)
     public Double getReactionTime(Long studentId) {
@@ -98,6 +102,52 @@ public class StudentServiceImpl implements StudentService {
         if (requestDTO.getDepartmentId() != null) {
             Department department = departmentRepository.findById(requestDTO.getDepartmentId())
                     .orElseThrow(() -> new StudentException(ErrorStatus.DEPARTMENT_NOT_FOUND));
+
+            student.updateDepartment(department);
+        }
+
+        return StudentConverter.toStudentInfoResponseDTO(student);
+    }
+
+
+
+    @Override
+    @Transactional
+    public StudentInfoResponseDTO onboarding(Long studentId, StudentOnboardingRequestDTO requestDTO) {
+
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new StudentException(ErrorStatus.STUDENT_NOT_FOUND));
+
+        if (requestDTO.getStudentNumber() != null && !requestDTO.getStudentNumber().isBlank()) {
+
+            boolean duplicated = studentRepository.existsByStudentNumber(requestDTO.getStudentNumber());
+
+            if (duplicated && (student.getStudentNumber() == null
+                    || !student.getStudentNumber().equals(requestDTO.getStudentNumber()))) {
+                throw new StudentException(ErrorStatus.STUDENT_NUMBER_DUPLICATED);
+            }
+
+            student.updateStudentNumber(requestDTO.getStudentNumber());
+        }
+
+        if (requestDTO.getGrade() != null) {
+            student.updateGrade(requestDTO.getGrade());
+        }
+
+        College college = null;
+        if (requestDTO.getCollegeId() != null) {
+            college = collegeRepository.findById(requestDTO.getCollegeId())
+                    .orElseThrow(() -> new StudentException(ErrorStatus.COLLEGE_NOT_FOUND));
+        }
+
+        if (requestDTO.getDepartmentId() != null) {
+            Department department = departmentRepository.findById(requestDTO.getDepartmentId())
+                    .orElseThrow(() -> new StudentException(ErrorStatus.DEPARTMENT_NOT_FOUND));
+
+            if (college != null && department.getCollege() != null
+                    && !department.getCollege().getId().equals(college.getId())) {
+                throw new StudentException(ErrorStatus.DEPARTMENT_NOT_FOUND);
+            }
 
             student.updateDepartment(department);
         }
