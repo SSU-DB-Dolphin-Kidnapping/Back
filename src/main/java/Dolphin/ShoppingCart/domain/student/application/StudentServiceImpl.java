@@ -1,6 +1,8 @@
 package Dolphin.ShoppingCart.domain.student.application;
 
 import Dolphin.ShoppingCart.domain.student.converter.StudentConverter;
+import Dolphin.ShoppingCart.domain.student.dto.login.StudentLoginRequestDTO;
+import Dolphin.ShoppingCart.domain.student.dto.login.StudentLoginResponseDTO;
 import Dolphin.ShoppingCart.domain.student.dto.signup.StudentSignUpRequestDTO;
 import Dolphin.ShoppingCart.domain.student.dto.signup.StudentSignUpResponseDTO;
 import lombok.RequiredArgsConstructor;
@@ -46,5 +48,20 @@ public class StudentServiceImpl implements StudentService {
         Student saved = studentRepository.save(student);
 
         return StudentConverter.toSignUpResponseDTO(saved);
+    }
+
+    public StudentLoginResponseDTO login(StudentLoginRequestDTO requestDTO) {
+
+        // 1. 닉네임으로 학생 조회
+        Student student = studentRepository.findByNickname(requestDTO.getNickname())
+                .orElseThrow(() -> new StudentException(ErrorStatus.STUDENT_LOGIN_FAILED));
+
+        // 2. 비밀번호 검증 (평문 비교, 나중에 암호화 적용 가능)
+        if (!student.getPassword().equals(requestDTO.getPassword())) {
+            throw new StudentException(ErrorStatus.STUDENT_LOGIN_FAILED);
+        }
+
+        // 3. 응답 DTO 변환
+        return StudentConverter.toLoginResponseDTO(student);
     }
 }

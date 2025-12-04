@@ -15,7 +15,7 @@ public enum SuccessStatus implements BaseCode {
     Test_SUCCESS(HttpStatus.OK,"TEST_200", "테스트가 성공적으로 완료되었습니다."),
 
     STUDENT_SIGNUP_SUCCESS(HttpStatus.OK, "STUDENT2001", "학생 회원가입이 성공적으로 완료되었습니다."),
-
+    STUDENT_LOGIN_SUCCESS(HttpStatus.OK, "STUDENT2002", "학생 로그인이 성공적으로 완료되었습니다."),
     ;
 
     private final HttpStatus httpStatus;

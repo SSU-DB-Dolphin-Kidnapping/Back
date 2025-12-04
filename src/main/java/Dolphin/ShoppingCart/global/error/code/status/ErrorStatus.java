@@ -17,6 +17,7 @@ public enum ErrorStatus implements BaseErrorCode {
     // 학생 도메인 에러
 
     STUDENT_NICKNAME_DUPLICATED(HttpStatus.CONFLICT, "STUDENT4091", "이미 사용 중인 닉네임입니다."),
+    STUDENT_LOGIN_FAILED(HttpStatus.UNAUTHORIZED, "STUDENT4011", "닉네임 또는 비밀번호가 올바르지 않습니다."),
     ;
 
     private final HttpStatus httpStatus;
