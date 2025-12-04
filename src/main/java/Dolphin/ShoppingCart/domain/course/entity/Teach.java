@@ -40,6 +40,7 @@ public class Teach extends BaseEntity {
 
     private Integer number;   // 과목번호
     private String className; // 분반명
+    private Integer targetGrade;
 
     @Enumerated(EnumType.STRING)
     private TeachType type;   // 강의 유형
