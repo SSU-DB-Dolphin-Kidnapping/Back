@@ -5,6 +5,7 @@ import Dolphin.ShoppingCart.domain.student.dto.login.StudentLoginRequestDTO;
 import Dolphin.ShoppingCart.domain.student.dto.login.StudentLoginResponseDTO;
 import Dolphin.ShoppingCart.domain.student.dto.signup.StudentSignUpRequestDTO;
 import Dolphin.ShoppingCart.domain.student.dto.signup.StudentSignUpResponseDTO;
+import Dolphin.ShoppingCart.domain.student.dto.update.StudentUpdateRequestDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -76,5 +77,19 @@ public class StudentController {
     ) {
         StudentInfoResponseDTO result = studentService.getStudentInfo(studentId);
         return BaseResponse.onSuccess(SuccessStatus.STUDENT_INFO_SUCCESS, result);
+    }
+
+    @PatchMapping("/{studentId}")
+    @Operation(summary = "학생 정보 수정 API",
+            description = "학생 이름, 비밀번호, 학년, 학과를 수정합니다. 전달된 값만 변경됩니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "STUDENT2004", description = "학생 정보 수정 성공")
+    })
+    public BaseResponse<StudentInfoResponseDTO> updateStudentInfo(
+            @PathVariable Long studentId,
+            @Valid @RequestBody StudentUpdateRequestDTO requestDTO
+    ) {
+        StudentInfoResponseDTO result = studentService.updateStudentInfo(studentId, requestDTO);
+        return BaseResponse.onSuccess(SuccessStatus.STUDENT_UPDATE_SUCCESS, result);
     }
 }

@@ -51,4 +51,21 @@ public class Student extends BaseEntity {
     public void updateReactionTime(Double avgReactionTime) {
         this.avgReactionTime = avgReactionTime;
     }
+
+
+    public void updateStudentName(String studentName) {
+        this.studentName = studentName;
+    }
+
+    public void updatePassword(String password) {
+        this.password = password;
+    }
+
+    public void updateGrade(Integer grade) {
+        this.grade = grade;
+    }
+
+    public void updateDepartment(Department department) {
+        this.department = department;
+    }
 }

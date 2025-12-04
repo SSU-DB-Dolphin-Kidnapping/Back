@@ -1,11 +1,14 @@
 package Dolphin.ShoppingCart.domain.student.application;
 
+import Dolphin.ShoppingCart.domain.academic.entity.Department;
+import Dolphin.ShoppingCart.domain.academic.repository.DepartmentRepository;
 import Dolphin.ShoppingCart.domain.student.converter.StudentConverter;
 import Dolphin.ShoppingCart.domain.student.dto.info.StudentInfoResponseDTO;
 import Dolphin.ShoppingCart.domain.student.dto.login.StudentLoginRequestDTO;
 import Dolphin.ShoppingCart.domain.student.dto.login.StudentLoginResponseDTO;
 import Dolphin.ShoppingCart.domain.student.dto.signup.StudentSignUpRequestDTO;
 import Dolphin.ShoppingCart.domain.student.dto.signup.StudentSignUpResponseDTO;
+import Dolphin.ShoppingCart.domain.student.dto.update.StudentUpdateRequestDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import Dolphin.ShoppingCart.domain.student.dto.StudentReactionRequestDTO;
@@ -20,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class StudentServiceImpl implements StudentService {
 
     private final StudentRepository studentRepository; // 생성자 주입
+    private final DepartmentRepository departmentRepository;
 
     @Transactional(readOnly = true)
     public Double getReactionTime(Long studentId) {
@@ -67,6 +71,36 @@ public class StudentServiceImpl implements StudentService {
 
         Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new StudentException(ErrorStatus.STUDENT_NOT_FOUND));
+
+        return StudentConverter.toStudentInfoResponseDTO(student);
+    }
+
+
+    @Override
+    @Transactional
+    public StudentInfoResponseDTO updateStudentInfo(Long studentId, StudentUpdateRequestDTO requestDTO) {
+
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new StudentException(ErrorStatus.STUDENT_NOT_FOUND));
+
+        if (requestDTO.getStudentName() != null && !requestDTO.getStudentName().isBlank()) {
+            student.updateStudentName(requestDTO.getStudentName());
+        }
+
+        if (requestDTO.getPassword() != null && !requestDTO.getPassword().isBlank()) {
+            student.updatePassword(requestDTO.getPassword());
+        }
+
+        if (requestDTO.getGrade() != null) {
+            student.updateGrade(requestDTO.getGrade());
+        }
+
+        if (requestDTO.getDepartmentId() != null) {
+            Department department = departmentRepository.findById(requestDTO.getDepartmentId())
+                    .orElseThrow(() -> new StudentException(ErrorStatus.DEPARTMENT_NOT_FOUND));
+
+            student.updateDepartment(department);
+        }
 
         return StudentConverter.toStudentInfoResponseDTO(student);
     }
