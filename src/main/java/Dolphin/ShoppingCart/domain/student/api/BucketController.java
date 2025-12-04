@@ -49,4 +49,31 @@ public class BucketController {
         bucketService.updateAlternateCourse(studentId, request);
         return BaseResponse.onSuccess(SuccessStatus.OK, null);
     }
+
+    @GetMapping("/list")
+    public BaseResponse<List<BucketSummaryDTO>> getMyBuckets() {
+        Long studentId = 1L; // JWT 적용 전 임시 ID
+        return BaseResponse.onSuccess(SuccessStatus.OK, bucketService.getMyBuckets(studentId));
+    }
+
+    @PostMapping("/create")
+    public BaseResponse<Void> createBucket(@RequestBody BucketCreateRequestDTO request) {
+        Long studentId = 1L;
+        bucketService.createBucket(studentId, request);
+        return BaseResponse.onSuccess(SuccessStatus.OK, null);
+    }
+
+    @PatchMapping("/best")
+    public BaseResponse<Void> setBestBucket(@RequestBody BucketSelectRequestDTO request) {
+        Long studentId = 1L;
+        bucketService.setBestBucket(studentId, request);
+        return BaseResponse.onSuccess(SuccessStatus.OK, null);
+    }
+
+    @DeleteMapping("/cart/{bucketId}")
+    public BaseResponse<Void> deleteBucket(@PathVariable Long bucketId) {
+        Long studentId = 1L;
+        bucketService.deleteBucket(studentId, bucketId);
+        return BaseResponse.onSuccess(SuccessStatus.OK, null);
+    }
 }

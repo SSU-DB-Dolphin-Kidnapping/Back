@@ -48,4 +48,8 @@ public class Student extends BaseEntity {
     public void updateReactionTime(Double avgReactionTime) {
         this.avgReactionTime = avgReactionTime;
     }
+
+    public void changeBestBucket(Long bucketId) {
+        this.bestBucket = bucketId;
+    }
 }
