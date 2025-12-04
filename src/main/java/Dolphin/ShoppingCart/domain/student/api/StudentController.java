@@ -7,6 +7,8 @@ import Dolphin.ShoppingCart.domain.student.dto.onboarding.StudentOnboardingReque
 import Dolphin.ShoppingCart.domain.student.dto.signup.StudentSignUpRequestDTO;
 import Dolphin.ShoppingCart.domain.student.dto.signup.StudentSignUpResponseDTO;
 import Dolphin.ShoppingCart.domain.student.dto.update.StudentUpdateRequestDTO;
+import Dolphin.ShoppingCart.domain.student.dto.verify.StudentEmailSendRequestDTO;
+import Dolphin.ShoppingCart.domain.student.dto.verify.StudentEmailVerifyRequestDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -107,5 +109,35 @@ public class StudentController {
     ) {
         StudentInfoResponseDTO result = studentService.onboarding(studentId, requestDTO);
         return BaseResponse.onSuccess(SuccessStatus.STUDENT_ONBOARDING_SUCCESS, result);
+    }
+
+    // 인증 메일 보내기
+    @PostMapping("/{studentId}/email/send-verification")
+    @Operation(summary = "숭실대 이메일 인증 메일 발송",
+            description = "숭실대학교 이메일로 인증 코드를 발송합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "STUDENT2006", description = "인증 메일이 성공적으로 발송되었습니다.")
+    })
+    public BaseResponse<Void> sendVerificationEmail(
+            @PathVariable Long studentId,
+            @Valid @RequestBody StudentEmailSendRequestDTO requestDTO
+    ) {
+        studentService.sendVerificationEmail(studentId, requestDTO);
+        return BaseResponse.onSuccess(SuccessStatus.STUDENT_EMAIL_SEND_SUCCESS, null);
+    }
+
+    // 인증 코드 검증
+    @PostMapping("/{studentId}/email/verify")
+    @Operation(summary = "숭실대 이메일 인증 코드 검증",
+            description = "이메일로 받은 인증 코드를 검증하고, 학생을 숭실대 재학생으로 인증합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "STUDENT2007", description = "숭실대 이메일 인증이 완료되었습니다.")
+    })
+    public BaseResponse<StudentInfoResponseDTO> verifyEmail(
+            @PathVariable Long studentId,
+            @Valid @RequestBody StudentEmailVerifyRequestDTO requestDTO
+    ) {
+        StudentInfoResponseDTO result = studentService.verifyEmail(studentId, requestDTO);
+        return BaseResponse.onSuccess(SuccessStatus.STUDENT_EMAIL_VERIFY_SUCCESS, result);
     }
 }

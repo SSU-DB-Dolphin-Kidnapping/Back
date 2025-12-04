@@ -8,6 +8,8 @@ import Dolphin.ShoppingCart.domain.student.dto.onboarding.StudentOnboardingReque
 import Dolphin.ShoppingCart.domain.student.dto.signup.StudentSignUpRequestDTO;
 import Dolphin.ShoppingCart.domain.student.dto.signup.StudentSignUpResponseDTO;
 import Dolphin.ShoppingCart.domain.student.dto.update.StudentUpdateRequestDTO;
+import Dolphin.ShoppingCart.domain.student.dto.verify.StudentEmailSendRequestDTO;
+import Dolphin.ShoppingCart.domain.student.dto.verify.StudentEmailVerifyRequestDTO;
 
 public interface StudentService {
     Double getReactionTime(Long studentId);
@@ -17,5 +19,7 @@ public interface StudentService {
     StudentInfoResponseDTO getStudentInfo(Long studentId);
     StudentInfoResponseDTO updateStudentInfo(Long studentId, StudentUpdateRequestDTO requestDTO);
     StudentInfoResponseDTO onboarding(Long studentId, StudentOnboardingRequestDTO requestDTO);
+    void sendVerificationEmail(Long studentId, StudentEmailSendRequestDTO requestDTO);
+    StudentInfoResponseDTO verifyEmail(Long studentId, StudentEmailVerifyRequestDTO requestDTO);
 
 }

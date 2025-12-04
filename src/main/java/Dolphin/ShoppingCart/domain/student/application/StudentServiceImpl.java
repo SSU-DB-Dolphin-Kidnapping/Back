@@ -12,6 +12,11 @@ import Dolphin.ShoppingCart.domain.student.dto.onboarding.StudentOnboardingReque
 import Dolphin.ShoppingCart.domain.student.dto.signup.StudentSignUpRequestDTO;
 import Dolphin.ShoppingCart.domain.student.dto.signup.StudentSignUpResponseDTO;
 import Dolphin.ShoppingCart.domain.student.dto.update.StudentUpdateRequestDTO;
+import Dolphin.ShoppingCart.domain.student.dto.verify.StudentEmailSendRequestDTO;
+import Dolphin.ShoppingCart.domain.student.dto.verify.StudentEmailVerifyRequestDTO;
+import Dolphin.ShoppingCart.domain.student.entity.StudentEmailVerification;
+import Dolphin.ShoppingCart.domain.student.repository.StudentEmailVerificationRepository;
+import Dolphin.ShoppingCart.global.service.MailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import Dolphin.ShoppingCart.domain.student.dto.StudentReactionRequestDTO;
@@ -21,6 +26,9 @@ import Dolphin.ShoppingCart.global.error.code.status.ErrorStatus;
 import Dolphin.ShoppingCart.domain.student.exception.StudentException;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 public class StudentServiceImpl implements StudentService {
@@ -28,6 +36,8 @@ public class StudentServiceImpl implements StudentService {
     private final StudentRepository studentRepository; // 생성자 주입
     private final DepartmentRepository departmentRepository;
     private final CollegeRepository collegeRepository;
+    private final StudentEmailVerificationRepository studentEmailVerificationRepository;
+    private final MailService mailService;
 
     @Transactional(readOnly = true)
     public Double getReactionTime(Long studentId) {
@@ -154,4 +164,85 @@ public class StudentServiceImpl implements StudentService {
 
         return StudentConverter.toStudentInfoResponseDTO(student);
     }
+
+
+
+
+    private String generateCode() {
+        SecureRandom random = new SecureRandom();
+        int num = random.nextInt(900000) + 100000; // 100000 ~ 999999
+        return String.valueOf(num);
+    }
+
+    @Override
+    @Transactional
+    public void sendVerificationEmail(Long studentId, StudentEmailSendRequestDTO requestDTO) {
+
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new StudentException(ErrorStatus.STUDENT_NOT_FOUND));
+
+        String email = requestDTO.getSoongsilEmail();
+
+        if (Boolean.TRUE.equals(student.getVerified())) {
+            throw new StudentException(ErrorStatus.ALREADY_VERIFIED_STUDENT);
+        }
+
+        if (studentRepository.existsBySoongsilEmail(email)) {
+            throw new StudentException(ErrorStatus.EMAIL_ALREADY_IN_USE);
+        }
+
+        if (!email.endsWith("@soongsil.ac.kr")) {
+            throw new StudentException(ErrorStatus._BAD_REQUEST);
+        }
+
+        student.updateSoongsilEmail(email);
+
+        String code = generateCode();
+
+        StudentEmailVerification verification = StudentEmailVerification.builder()
+                .student(student)
+                .email(email)
+                .code(code)
+                .expiredAt(LocalDateTime.now().plusMinutes(10))
+                .used(false)
+                .build();
+
+        studentEmailVerificationRepository.save(verification);
+
+        mailService.sendVerificationMail(email, code);
+    }
+
+    @Override
+    @Transactional
+    public StudentInfoResponseDTO verifyEmail(Long studentId, StudentEmailVerifyRequestDTO requestDTO) {
+
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new StudentException(ErrorStatus.STUDENT_NOT_FOUND));
+
+        StudentEmailVerification verification = studentEmailVerificationRepository
+                .findTopByStudentIdOrderByCreatedAtDesc(studentId)
+                .orElseThrow(() -> new StudentException(ErrorStatus.VERIFICATION_CODE_INVALID));
+
+        if (verification.getUsed()) {
+            throw new StudentException(ErrorStatus.VERIFICATION_CODE_ALREADY_USED);
+        }
+
+        if (verification.isExpired()) {
+            throw new StudentException(ErrorStatus.VERIFICATION_CODE_EXPIRED);
+        }
+
+        if (!verification.getCode().equals(requestDTO.getCode())) {
+            throw new StudentException(ErrorStatus.VERIFICATION_CODE_INVALID);
+        }
+
+        // 코드 사용 처리
+        verification.markUsed();
+
+        // 학생 인증 처리
+        student.verify();
+
+        // 최종 학생 정보 반환 (verified 포함)
+        return StudentConverter.toStudentInfoResponseDTO(student);
+    }
+
 }

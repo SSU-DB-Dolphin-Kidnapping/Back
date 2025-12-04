@@ -22,6 +22,14 @@ public enum ErrorStatus implements BaseErrorCode {
     DEPARTMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "DEPARTMENT4041", "해당 학과를 찾을 수 없습니다."),
     STUDENT_NUMBER_DUPLICATED(HttpStatus.CONFLICT, "STUDENT4092", "이미 등록된 학번입니다."),
     COLLEGE_NOT_FOUND(HttpStatus.NOT_FOUND, "COLLEGE4041", "해당 학부를 찾을 수 없습니다."),
+
+    // 이메일 인증 에러 ---------------------------
+    EMAIL_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "EMAIL5001", "인증 메일 전송에 실패했습니다."),
+    VERIFICATION_CODE_INVALID(HttpStatus.BAD_REQUEST, "VERIFY4001", "인증 코드가 올바르지 않습니다."),
+    VERIFICATION_CODE_EXPIRED(HttpStatus.BAD_REQUEST, "VERIFY4002", "인증 코드가 만료되었습니다."),
+    VERIFICATION_CODE_ALREADY_USED(HttpStatus.BAD_REQUEST, "VERIFY4003", "이미 사용된 인증 코드입니다."),
+    EMAIL_ALREADY_IN_USE(HttpStatus.BAD_REQUEST, "STU4001", "이미 사용 중인 숭실대 이메일입니다."),
+    ALREADY_VERIFIED_STUDENT(HttpStatus.BAD_REQUEST, "STU4002", "이미 이메일 인증이 완료된 학생입니다."),
     ;
 
     private final HttpStatus httpStatus;
