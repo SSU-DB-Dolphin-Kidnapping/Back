@@ -11,6 +11,8 @@ jobs:
       DEPLOY_DB_URL: ${{ secrets.DEPLOY_DB_URL }}
       DEPLOY_DB_USERNAME: ${{ secrets.DEPLOY_DB_USERNAME }}
       DEPLOY_DB_PASSWORD: ${{ secrets.DEPLOY_DB_PASSWORD }}
+      MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+      MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
 
     steps:
       - name: Checkout
@@ -44,12 +46,14 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
-          envs: DEPLOY_DB_URL, DEPLOY_DB_USERNAME, DEPLOY_DB_PASSWORD
+          envs: DEPLOY_DB_URL, DEPLOY_DB_USERNAME, DEPLOY_DB_PASSWORD, MAIL_USERNAME, MAIL_PASSWORD
           script: |
             echo "Running deploy script..."
 
             export DEPLOY_DB_URL=$DEPLOY_DB_URL
             export DEPLOY_DB_USERNAME=$DEPLOY_DB_USERNAME
             export DEPLOY_DB_PASSWORD=$DEPLOY_DB_PASSWORD
+            export MAIL_USERNAME=$MAIL_USERNAME
+            export MAIL_PASSWORD=$MAIL_PASSWORD
 
             bash /home/ubuntu/app/deploy.sh
