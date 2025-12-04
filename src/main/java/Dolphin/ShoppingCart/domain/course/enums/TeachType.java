@@ -1,11 +1,11 @@
 package Dolphin.ShoppingCart.domain.course.enums;
 
 public enum TeachType {
-    OFFLINE("오프라인"),
-    ONLINE("온라인"),
-    HYBRID("혼합형"),
-    PRACTICE("실습"),
-    SEMINAR("세미나");
+    ENGAGED_LEARNING("EL+"),
+    ENGLISH("영어"),
+    MIXED("영한혼합"),
+    KOREAN("한국어"),
+    NONE("미기재");
 
     private final String description;
 
