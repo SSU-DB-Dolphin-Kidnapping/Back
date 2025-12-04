@@ -53,6 +53,8 @@ public class StudentConverter {
                 )
                 .avgReactionTime(student.getAvgReactionTime())
                 .bestBucket(student.getBestBucket())
+                .soongsilEmail(student.getSoongsilEmail())
+                .verified(student.getVerified())
                 .build();
     }
 }
