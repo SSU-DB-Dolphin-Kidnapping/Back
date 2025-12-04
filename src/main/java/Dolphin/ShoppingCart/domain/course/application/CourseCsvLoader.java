@@ -15,6 +15,7 @@ import Dolphin.ShoppingCart.domain.course.repository.CourseRepository;
 import Dolphin.ShoppingCart.domain.course.repository.CourseTypeRepository;
 import Dolphin.ShoppingCart.domain.course.repository.TeachInfoRepository;
 import Dolphin.ShoppingCart.domain.course.repository.TeachRepository;
+import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,6 +44,14 @@ public class CourseCsvLoader {
     private final TeachInfoRepository teachInfoRepository;
     private final ProfessorRepository professorRepository;
 
+    @PostConstruct
+    public void init() throws Exception {
+        // 이미 데이터 있으면 다시 안 넣기
+        if (teachRepository.count() == 0) {
+            load();
+        }
+    }
+
     @Transactional
     public void load() throws Exception {
 
@@ -67,6 +76,7 @@ public class CourseCsvLoader {
                 String majorityRaw = record.get("majority").trim();
                 String secondMajorRaw = record.get("secondMajor"); // null 가능
                 String numberRaw = record.get("number").trim();
+                Long teachNumber = Long.parseLong(numberRaw);
                 String name = record.get("name").trim();
                 String typeRaw = record.get("type"); // EL+, 영어, 영한혼합, 공백
                 String className = record.get("className"); // null 가능
@@ -129,7 +139,7 @@ public class CourseCsvLoader {
                         .professor(professor)
                         .year(year)
                         .semester(semesterType)
-                        .number(Integer.parseInt(numberRaw))
+                        .number(teachNumber)
                         .className(className == null ? null : className.trim())
                         .targetGrade(targetGrade)
                         .type(teachType)

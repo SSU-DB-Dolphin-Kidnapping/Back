@@ -38,7 +38,7 @@ public class Teach extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private SemesterType semester;
 
-    private Integer number;   // 과목번호
+    private Long number;   // 과목번호
     private String className; // 분반명
     private Integer targetGrade;
 
