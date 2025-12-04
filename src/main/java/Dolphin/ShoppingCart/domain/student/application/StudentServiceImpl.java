@@ -1,6 +1,7 @@
 package Dolphin.ShoppingCart.domain.student.application;
 
 import Dolphin.ShoppingCart.domain.student.converter.StudentConverter;
+import Dolphin.ShoppingCart.domain.student.dto.info.StudentInfoResponseDTO;
 import Dolphin.ShoppingCart.domain.student.dto.login.StudentLoginRequestDTO;
 import Dolphin.ShoppingCart.domain.student.dto.login.StudentLoginResponseDTO;
 import Dolphin.ShoppingCart.domain.student.dto.signup.StudentSignUpRequestDTO;
@@ -39,7 +40,6 @@ public class StudentServiceImpl implements StudentService {
     @Transactional
     public StudentSignUpResponseDTO signUp(StudentSignUpRequestDTO requestDTO) {
 
-        // 닉네임 중복
         if (studentRepository.existsByNickname(requestDTO.getNickname())) {
             throw new StudentException(ErrorStatus.STUDENT_NICKNAME_DUPLICATED);
         }
@@ -52,16 +52,22 @@ public class StudentServiceImpl implements StudentService {
 
     public StudentLoginResponseDTO login(StudentLoginRequestDTO requestDTO) {
 
-        // 1. 닉네임으로 학생 조회
         Student student = studentRepository.findByNickname(requestDTO.getNickname())
                 .orElseThrow(() -> new StudentException(ErrorStatus.STUDENT_LOGIN_FAILED));
 
-        // 2. 비밀번호 검증 (평문 비교, 나중에 암호화 적용 가능)
         if (!student.getPassword().equals(requestDTO.getPassword())) {
             throw new StudentException(ErrorStatus.STUDENT_LOGIN_FAILED);
         }
 
-        // 3. 응답 DTO 변환
         return StudentConverter.toLoginResponseDTO(student);
+    }
+
+    @Override
+    public StudentInfoResponseDTO getStudentInfo(Long studentId) {
+
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new StudentException(ErrorStatus.STUDENT_NOT_FOUND));
+
+        return StudentConverter.toStudentInfoResponseDTO(student);
     }
 }

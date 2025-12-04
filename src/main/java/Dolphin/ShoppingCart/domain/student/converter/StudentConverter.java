@@ -1,5 +1,6 @@
 package Dolphin.ShoppingCart.domain.student.converter;
 
+import Dolphin.ShoppingCart.domain.student.dto.info.StudentInfoResponseDTO;
 import Dolphin.ShoppingCart.domain.student.dto.login.StudentLoginResponseDTO;
 import Dolphin.ShoppingCart.domain.student.dto.signup.StudentSignUpRequestDTO;
 import Dolphin.ShoppingCart.domain.student.dto.signup.StudentSignUpResponseDTO;
@@ -38,4 +39,20 @@ public class StudentConverter {
                 .build();
     }
 
+
+    // 회원정보 조회용 변환 메서드
+    public static StudentInfoResponseDTO toStudentInfoResponseDTO(Student student) {
+        return StudentInfoResponseDTO.builder()
+                .id(student.getId())
+                .studentName(student.getStudentName())
+                .nickname(student.getNickname())
+                .studentNumber(student.getStudentNumber())
+                .grade(student.getGrade())
+                .departmentId(
+                        student.getDepartment() != null ? student.getDepartment().getId() : null
+                )
+                .avgReactionTime(student.getAvgReactionTime())
+                .bestBucket(student.getBestBucket())
+                .build();
+    }
 }

@@ -35,6 +35,9 @@ public class Student extends BaseEntity {
     @Column(nullable = false)
     private String studentName;
 
+    @Column(unique = true)
+    private String studentNumber;
+
     @Column(name = "avg_reaction_time")
     private Double avgReactionTime;
 

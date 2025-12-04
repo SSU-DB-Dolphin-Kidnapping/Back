@@ -1,5 +1,6 @@
 package Dolphin.ShoppingCart.domain.student.api;
 
+import Dolphin.ShoppingCart.domain.student.dto.info.StudentInfoResponseDTO;
 import Dolphin.ShoppingCart.domain.student.dto.login.StudentLoginRequestDTO;
 import Dolphin.ShoppingCart.domain.student.dto.login.StudentLoginResponseDTO;
 import Dolphin.ShoppingCart.domain.student.dto.signup.StudentSignUpRequestDTO;
@@ -62,5 +63,18 @@ public class StudentController {
     ) {
         StudentLoginResponseDTO result = studentService.login(requestDTO);
         return BaseResponse.onSuccess(SuccessStatus.STUDENT_LOGIN_SUCCESS, result);
+    }
+
+    @GetMapping("/{studentId}")
+    @Operation(summary = "학생 정보 조회 API",
+            description = "학생 ID로 회원 정보를 조회합니다. 비밀번호는 포함되지 않습니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "STUDENT2003", description = "학생 정보 조회 성공")
+    })
+    public BaseResponse<StudentInfoResponseDTO> getStudentInfo(
+            @PathVariable Long studentId
+    ) {
+        StudentInfoResponseDTO result = studentService.getStudentInfo(studentId);
+        return BaseResponse.onSuccess(SuccessStatus.STUDENT_INFO_SUCCESS, result);
     }
 }
