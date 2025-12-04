@@ -14,7 +14,11 @@ import Dolphin.ShoppingCart.domain.student.dto.signup.StudentSignUpResponseDTO;
 import Dolphin.ShoppingCart.domain.student.dto.update.StudentUpdateRequestDTO;
 import Dolphin.ShoppingCart.domain.student.dto.verify.StudentEmailSendRequestDTO;
 import Dolphin.ShoppingCart.domain.student.dto.verify.StudentEmailVerifyRequestDTO;
+import Dolphin.ShoppingCart.domain.student.entity.Bucket;
+import Dolphin.ShoppingCart.domain.student.entity.MyLastBucketNumber;
 import Dolphin.ShoppingCart.domain.student.entity.StudentEmailVerification;
+import Dolphin.ShoppingCart.domain.student.repository.BucketRepository;
+import Dolphin.ShoppingCart.domain.student.repository.MyLastBucketNumberRepository;
 import Dolphin.ShoppingCart.domain.student.repository.StudentEmailVerificationRepository;
 import Dolphin.ShoppingCart.global.service.MailService;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +42,8 @@ public class StudentServiceImpl implements StudentService {
     private final CollegeRepository collegeRepository;
     private final StudentEmailVerificationRepository studentEmailVerificationRepository;
     private final MailService mailService;
+    private final BucketRepository bucketRepository;
+    private final MyLastBucketNumberRepository myLastBucketNumberRepository;
 
     @Transactional(readOnly = true)
     public Double getReactionTime(Long studentId) {
@@ -63,9 +69,25 @@ public class StudentServiceImpl implements StudentService {
         }
 
         Student student = StudentConverter.toStudent(requestDTO);
-        Student saved = studentRepository.save(student);
+        Student savedStudent = studentRepository.save(student);
 
-        return StudentConverter.toSignUpResponseDTO(saved);
+        Bucket basicBucket = Bucket.builder()
+                .student(savedStudent)
+                .name("기본장바구니")
+                .build();
+
+        Bucket savedBucket = bucketRepository.save(basicBucket);
+
+        savedStudent.changeBestBucket(savedBucket.getId());
+
+        MyLastBucketNumber lastBucket = MyLastBucketNumber.builder()
+                .student(savedStudent)
+                .lastBucketNumber(savedBucket.getId().intValue())
+                .build();
+
+        myLastBucketNumberRepository.save(lastBucket);
+
+        return StudentConverter.toSignUpResponseDTO(savedStudent);
     }
 
     public StudentLoginResponseDTO login(StudentLoginRequestDTO requestDTO) {
