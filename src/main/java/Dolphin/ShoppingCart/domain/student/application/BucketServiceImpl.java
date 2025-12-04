@@ -44,18 +44,25 @@ public class BucketServiceImpl implements BucketService {
     public void addCourse(Long studentId, BucketAddRequestDTO request) {
         Long bucketId = getBestBucketId(studentId);
 
-        // 중복 체크
         if (bucketElementRepository.existsByBucketIdAndTeachId(bucketId, request.getTeachId())) {
-            throw new StudentException(ErrorStatus._BAD_REQUEST); // 이미 담긴 과목
+            throw new StudentException(ErrorStatus._BAD_REQUEST);
         }
 
         Bucket bucket = bucketRepository.findById(bucketId)
                 .orElseThrow(() -> new StudentException(ErrorStatus._BAD_REQUEST));
 
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new StudentException(ErrorStatus._BAD_REQUEST));
+
         Teach teach = teachRepository.findById(request.getTeachId())
                 .orElseThrow(() -> new StudentException(ErrorStatus._BAD_REQUEST));
 
-        // 우선순위 결정 (마지막 + 1)
+        if (student.getGrade() != null && teach.getTargetGrade() != null) {
+            if (!student.getGrade().equals(teach.getTargetGrade())) {
+                throw new StudentException(ErrorStatus._BAD_REQUEST);
+            }
+        }
+
         Integer maxPriority = bucketElementRepository.findMaxPriorityByBucketId(bucketId).orElse(0);
 
         BucketElement newElement = BucketElement.builder()
@@ -141,7 +148,7 @@ public class BucketServiceImpl implements BucketService {
         String timePlace = "";
         if (teach.getTeachInfos() != null && !teach.getTeachInfos().isEmpty()) {
             TeachInfo info = teach.getTeachInfos().get(0);
-            timePlace = info.getDayOfTheWeek().getDescription().substring(0, 1) + " " +
+            timePlace = info.getDayOfTheWeek().getDescription().charAt(0) + " " +
                     info.getStartTime() + " (" + info.getClassroom() + ")";
         }
 

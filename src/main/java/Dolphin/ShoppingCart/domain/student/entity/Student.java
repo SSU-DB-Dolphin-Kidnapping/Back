@@ -40,6 +40,8 @@ public class Student extends BaseEntity {
 
     private Long bestBucket; // 대표 장바구니 번호
 
+    private Integer grade;
+
     @OneToMany(mappedBy = "student", fetch = FetchType.LAZY)
     private List<Bucket> buckets;
 
