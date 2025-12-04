@@ -42,4 +42,8 @@ public class Student extends BaseEntity {
 
     @OneToMany(mappedBy = "student", fetch = FetchType.LAZY)
     private List<Bucket> buckets;
+
+    public void updateReactionTime(Double avgReactionTime) {
+        this.avgReactionTime = avgReactionTime;
+    }
 }

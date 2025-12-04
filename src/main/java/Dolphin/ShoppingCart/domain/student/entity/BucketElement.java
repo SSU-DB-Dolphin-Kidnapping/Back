@@ -39,4 +39,12 @@ public class BucketElement extends BaseEntity {
 
     @OneToMany(mappedBy = "bucketElement", fetch = FetchType.LAZY)
     private List<History> histories;
+
+    public void updatePriority(Integer priority) {
+        this.priority = priority;
+    }
+
+    public void updateSubElement(BucketElement subElement) {
+        this.subElement = subElement;
+    }
 }
