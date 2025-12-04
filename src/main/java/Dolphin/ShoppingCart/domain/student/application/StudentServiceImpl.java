@@ -1,5 +1,8 @@
 package Dolphin.ShoppingCart.domain.student.application;
 
+import Dolphin.ShoppingCart.domain.student.converter.StudentConverter;
+import Dolphin.ShoppingCart.domain.student.dto.signup.StudentSignUpRequestDTO;
+import Dolphin.ShoppingCart.domain.student.dto.signup.StudentSignUpResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import Dolphin.ShoppingCart.domain.student.dto.StudentReactionRequestDTO;
@@ -28,5 +31,20 @@ public class StudentServiceImpl implements StudentService {
                 .orElseThrow(() -> new StudentException(ErrorStatus._BAD_REQUEST));
 
         student.updateReactionTime(request.getAvgReactionTime());
+    }
+
+
+    @Transactional
+    public StudentSignUpResponseDTO signUp(StudentSignUpRequestDTO requestDTO) {
+
+        // 닉네임 중복
+        if (studentRepository.existsByNickname(requestDTO.getNickname())) {
+            throw new StudentException(ErrorStatus.STUDENT_NICKNAME_DUPLICATED);
+        }
+
+        Student student = StudentConverter.toStudent(requestDTO);
+        Student saved = studentRepository.save(student);
+
+        return StudentConverter.toSignUpResponseDTO(saved);
     }
 }

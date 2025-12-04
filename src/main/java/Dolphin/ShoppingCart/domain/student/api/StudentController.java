@@ -1,5 +1,11 @@
 package Dolphin.ShoppingCart.domain.student.api;
 
+import Dolphin.ShoppingCart.domain.student.dto.signup.StudentSignUpRequestDTO;
+import Dolphin.ShoppingCart.domain.student.dto.signup.StudentSignUpResponseDTO;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,5 +34,18 @@ public class StudentController {
         Long studentId = 1L; // 임시 ID
         studentService.updateReactionTime(studentId, request);
         return BaseResponse.onSuccess(SuccessStatus.OK, null);
+    }
+
+    @PostMapping("/sign-up")
+    @Operation(summary = "학생 회원가입 API",
+            description = "학생 이름, 닉네임(Unique), 비밀번호로 학생 계정을 생성합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "STUDENT_200_1", description = "학생 회원가입이 성공적으로 완료되었습니다.")
+    })
+    public BaseResponse<StudentSignUpResponseDTO> signUp(
+            @Valid @RequestBody StudentSignUpRequestDTO requestDTO
+    ) {
+        StudentSignUpResponseDTO result = studentService.signUp(requestDTO);
+        return BaseResponse.onSuccess(SuccessStatus.STUDENT_SIGNUP_SUCCESS, result);
     }
 }
