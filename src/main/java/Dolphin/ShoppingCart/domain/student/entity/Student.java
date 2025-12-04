@@ -89,4 +89,7 @@ public class Student extends BaseEntity {
         this.verified = true;
         this.verifiedAt = LocalDateTime.now();
     }
+    public void changeBestBucket(Long bucketId) {
+        this.bestBucket = bucketId;
+    }
 }
