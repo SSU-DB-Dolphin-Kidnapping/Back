@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/student-")
+@RequestMapping("/api/student")
 @Validated
 public class StudentController {
     private final StudentService studentService; // 생성자 주입 필요
