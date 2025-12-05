@@ -7,6 +7,7 @@ import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -35,6 +36,9 @@ public class Student extends BaseEntity {
     @Column(nullable = false)
     private String studentName;
 
+    @Column(unique = true)
+    private String studentNumber;
+
     @Column(name = "avg_reaction_time")
     private Double avgReactionTime;
 
@@ -45,7 +49,47 @@ public class Student extends BaseEntity {
     @OneToMany(mappedBy = "student", fetch = FetchType.LAZY)
     private List<Bucket> buckets;
 
+    @Column(unique = true)
+    private String soongsilEmail;
+
+    private Boolean verified;
+    private LocalDateTime verifiedAt;
+
     public void updateReactionTime(Double avgReactionTime) {
         this.avgReactionTime = avgReactionTime;
+    }
+
+
+    public void updateStudentName(String studentName) {
+        this.studentName = studentName;
+    }
+
+    public void updatePassword(String password) {
+        this.password = password;
+    }
+
+    public void updateGrade(Integer grade) {
+        this.grade = grade;
+    }
+
+    public void updateDepartment(Department department) {
+        this.department = department;
+    }
+
+    public void updateStudentNumber(String studentNumber) {
+        this.studentNumber = studentNumber;
+    }
+
+
+    public void updateSoongsilEmail(String soongsilEmail) {
+        this.soongsilEmail = soongsilEmail;
+    }
+
+    public void verify() {
+        this.verified = true;
+        this.verifiedAt = LocalDateTime.now();
+    }
+    public void changeBestBucket(Long bucketId) {
+        this.bestBucket = bucketId;
     }
 }

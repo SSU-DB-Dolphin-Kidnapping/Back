@@ -12,6 +12,7 @@ import Dolphin.ShoppingCart.domain.student.repository.BucketElementRepository;
 import Dolphin.ShoppingCart.domain.student.repository.BucketRepository;
 import Dolphin.ShoppingCart.domain.student.repository.StudentRepository;
 import Dolphin.ShoppingCart.global.error.code.status.ErrorStatus;
+import java.util.ArrayList;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -79,7 +80,6 @@ public class BucketServiceImpl implements BucketService {
         BucketElement element = bucketElementRepository.findById(bucketElementId)
                 .orElseThrow(() -> new StudentException(ErrorStatus._BAD_REQUEST));
 
-        // 내 장바구니의 항목인지 검증
         if (!element.getBucket().getStudent().getId().equals(studentId)) {
             throw new StudentException(ErrorStatus._FORBIDDEN);
         }
@@ -93,7 +93,6 @@ public class BucketServiceImpl implements BucketService {
             BucketElement element = bucketElementRepository.findById(req.getBucketElementId())
                     .orElseThrow(() -> new StudentException(ErrorStatus._BAD_REQUEST));
 
-            // 검증
             if (!element.getBucket().getStudent().getId().equals(studentId)) {
                 throw new StudentException(ErrorStatus._FORBIDDEN);
             }
@@ -109,26 +108,93 @@ public class BucketServiceImpl implements BucketService {
         BucketElement targetElement = bucketElementRepository.findById(request.getBucketElementId())
                 .orElseThrow(() -> new StudentException(ErrorStatus._BAD_REQUEST));
 
-        // 내 장바구니 검증
         if (!targetElement.getBucket().getId().equals(bucketId)) {
             throw new StudentException(ErrorStatus._FORBIDDEN);
         }
 
         if (request.getAlternateTeachId() == null) {
-            // 대체과목 해제
             targetElement.updateSubElement(null);
         } else {
-            // 대체과목으로 설정할 과목이 내 장바구니에 있어야 함
             BucketElement altElement = bucketElementRepository.findByBucketIdAndTeachId(bucketId, request.getAlternateTeachId())
                     .orElseThrow(() -> new StudentException(ErrorStatus._BAD_REQUEST)); // 장바구니에 없는 과목은 대체과목 설정 불가 정책
 
-            // 순환 참조 방지 (A -> B -> A) 등의 로직은 생략되었으나 필요 시 추가
             if (targetElement.getId().equals(altElement.getId())) {
                 throw new StudentException(ErrorStatus._BAD_REQUEST);
             }
 
             targetElement.updateSubElement(altElement);
         }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<BucketSummaryDTO> getMyBuckets(Long studentId) {
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new StudentException(ErrorStatus._BAD_REQUEST));
+
+        List<Bucket> buckets = bucketRepository.findAllByStudent(student);
+
+        return buckets.stream()
+                .map(bucket -> BucketSummaryDTO.builder()
+                        .bucketId(bucket.getId())
+                        .name(bucket.getName())
+                        .isBest(bucket.getId().equals(student.getBestBucket()))
+                        .createdAt(bucket.getCreatedAt())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public void createBucket(Long studentId, BucketCreateRequestDTO request) {
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new StudentException(ErrorStatus._BAD_REQUEST));
+
+        Bucket newBucket = Bucket.builder()
+                .student(student)
+                .name(request.getName())
+                // 초기에는 빈 리스트
+                .bucketElements(new ArrayList<>())
+                .build();
+
+        Bucket savedBucket = bucketRepository.save(newBucket);
+
+        if (student.getBestBucket() == null) {
+            student.changeBestBucket(savedBucket.getId());
+        }
+    }
+
+    @Override
+    public void deleteBucket(Long studentId, Long bucketId) {
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new StudentException(ErrorStatus._BAD_REQUEST));
+
+        Bucket bucket = bucketRepository.findById(bucketId)
+                .orElseThrow(() -> new StudentException(ErrorStatus._BAD_REQUEST));
+
+        if (!bucket.getStudent().getId().equals(studentId)) {
+            throw new StudentException(ErrorStatus._FORBIDDEN);
+        }
+
+        if (bucketId.equals(student.getBestBucket())) {
+            throw new StudentException(ErrorStatus._BAD_REQUEST);
+        }
+
+        bucketRepository.delete(bucket);
+    }
+
+    @Override
+    public void setBestBucket(Long studentId, BucketSelectRequestDTO request) {
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new StudentException(ErrorStatus._BAD_REQUEST));
+
+        Bucket bucket = bucketRepository.findById(request.getBucketId())
+                .orElseThrow(() -> new StudentException(ErrorStatus._BAD_REQUEST));
+
+        if (!bucket.getStudent().getId().equals(studentId)) {
+            throw new StudentException(ErrorStatus._FORBIDDEN);
+        }
+
+        student.changeBestBucket(request.getBucketId());
     }
 
     private Long getBestBucketId(Long studentId) {
@@ -144,7 +210,6 @@ public class BucketServiceImpl implements BucketService {
     private BucketResponseDTO convertToDTO(BucketElement element) {
         Teach teach = element.getTeach();
 
-        // 시간 장소 포맷팅 (단순화: 첫번째 시간만 표시)
         String timePlace = "";
         if (teach.getTeachInfos() != null && !teach.getTeachInfos().isEmpty()) {
             TeachInfo info = teach.getTeachInfos().get(0);
