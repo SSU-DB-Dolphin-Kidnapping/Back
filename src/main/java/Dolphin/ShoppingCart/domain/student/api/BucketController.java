@@ -11,7 +11,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/bucket-")
+@RequestMapping("/api/bucket")
 public class BucketController {
 
     private final BucketService bucketService;
