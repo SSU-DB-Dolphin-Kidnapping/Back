@@ -146,29 +146,29 @@ INSERT INTO bucket (id, student_id, name, created_at, updated_at) VALUES
 -- - teach 34 (데이터베이스응용 가반, course_id=13, 화 15:00-16:15, 금 12:00-13:15)
 -- - teach 32 (네트워크보안 가반, course_id=12, 수 09:00-10:15, 목 10:30-11:45)
 -- - teach 41 (운영체제 가반, course_id=16, 월 09:00-10:15, 월 10:30-11:45)
--- → 시간 겹치지 않고, course_id 모두 다르고, 정원 충분 → 모두 성공 ✅
+-- → 시간 겹치지 않고, course_id 모두 다르고, 정원 충분 → 모두 성공
 INSERT INTO bucket_element (id, teach_id, bucket_id, priority, sub_element_id, created_at, updated_at) VALUES
 (1, 34, 1, 1, NULL, NOW(), NOW()),
 (2, 32, 1, 2, NULL, NOW(), NOW()),
 (3, 41, 1, 3, NULL, NOW(), NOW()),
 
 -- [Bucket 2] 정원 초과 + 대체 성공 장바구니
--- - teach 38 (소프트웨어분석및설계 가반, course_id=15, 정원 50) → 정원 초과로 실패 ❌
--- - sub_element: teach 39 (소프트웨어분석및설계 나반, course_id=15, 정원 52) → 대체되어 성공 ✅
+-- - teach 38 (소프트웨어분석및설계 가반, course_id=15, 정원 50) → 정원 초과로 실패
+-- - sub_element: teach 39 (소프트웨어분석및설계 나반, course_id=15, 정원 52) → 대체되어 성공
 -- 학생 2-50 (49명)이 teach 38에 신청하여 정원 50 채움
 -- → teach 38 실패 시 sub_element_id=5인 teach 39로 자동 대체
 (4, 38, 2, 1, 5, NOW(), NOW()),      -- 메인 과목 (정원 초과 실패 예상, 대체 과목 ID=5)
 (5, 39, 2, 2, NULL, NOW(), NOW()),   -- 대체 과목 (teach 38 실패 시 이걸로 대체)
 
 -- [Bucket 3] 시간대 충돌 장바구니
--- - teach 38 (월수 12:00-13:15) → 성공 ✅
--- - teach 42 (월 12:00-13:15, 월 13:30-14:45) → 시간 충돌로 실패 ❌
+-- - teach 38 (월수 12:00-13:15) → 성공
+-- - teach 42 (월 12:00-13:15, 월 13:30-14:45) → 시간 충돌로 실패
 (6, 38, 3, 1, NULL, NOW(), NOW()),
 (7, 42, 3, 2, NULL, NOW(), NOW()),
 
 -- [Bucket 4] 같은 course_id 장바구니
--- - teach 38 (course_id=15) → 성공 ✅
--- - teach 39 (course_id=15) → course_id 중복으로 실패 ❌
+-- - teach 38 (course_id=15) → 성공
+-- - teach 39 (course_id=15) → course_id 중복으로 실패
 (8, 38, 4, 1, NULL, NOW(), NOW()),
 (9, 39, 4, 2, NULL, NOW(), NOW());
 
