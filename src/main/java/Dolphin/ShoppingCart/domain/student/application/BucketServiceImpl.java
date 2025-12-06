@@ -32,8 +32,15 @@ public class BucketServiceImpl implements BucketService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<BucketResponseDTO> getBucketList(Long studentId) {
-        Long bucketId = getBestBucketId(studentId);
+    public List<BucketResponseDTO> getBucketElements(Long studentId, Long bucketId) {
+        // 장바구니가 해당 학생의 것인지 검증
+        Bucket bucket = bucketRepository.findById(bucketId)
+                .orElseThrow(() -> new StudentException(ErrorStatus._BAD_REQUEST));
+
+        if (!bucket.getStudent().getId().equals(studentId)) {
+            throw new StudentException(ErrorStatus._FORBIDDEN);
+        }
+
         List<BucketElement> elements = bucketElementRepository.findAllByBucketIdWithDetails(bucketId);
 
         return elements.stream()
@@ -42,15 +49,18 @@ public class BucketServiceImpl implements BucketService {
     }
 
     @Override
-    public void addCourse(Long studentId, BucketAddRequestDTO request) {
-        Long bucketId = getBestBucketId(studentId);
+    public void addCourse(Long studentId, Long bucketId, BucketAddRequestDTO request) {
+        // 장바구니가 해당 학생의 것인지 검증
+        Bucket bucket = bucketRepository.findById(bucketId)
+                .orElseThrow(() -> new StudentException(ErrorStatus._BAD_REQUEST));
+
+        if (!bucket.getStudent().getId().equals(studentId)) {
+            throw new StudentException(ErrorStatus._FORBIDDEN);
+        }
 
         if (bucketElementRepository.existsByBucketIdAndTeachId(bucketId, request.getTeachId())) {
             throw new StudentException(ErrorStatus._BAD_REQUEST);
         }
-
-        Bucket bucket = bucketRepository.findById(bucketId)
-                .orElseThrow(() -> new StudentException(ErrorStatus._BAD_REQUEST));
 
         Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new StudentException(ErrorStatus._BAD_REQUEST));
@@ -76,25 +86,41 @@ public class BucketServiceImpl implements BucketService {
     }
 
     @Override
-    public void deleteCourse(Long studentId, Long bucketElementId) {
+    public void deleteCourse(Long studentId, Long bucketId, Long bucketElementId) {
+        // 장바구니가 해당 학생의 것인지 검증
+        Bucket bucket = bucketRepository.findById(bucketId)
+                .orElseThrow(() -> new StudentException(ErrorStatus._BAD_REQUEST));
+
+        if (!bucket.getStudent().getId().equals(studentId)) {
+            throw new StudentException(ErrorStatus._FORBIDDEN);
+        }
+
         BucketElement element = bucketElementRepository.findById(bucketElementId)
                 .orElseThrow(() -> new StudentException(ErrorStatus._BAD_REQUEST));
 
-        if (!element.getBucket().getStudent().getId().equals(studentId)) {
-            throw new StudentException(ErrorStatus._FORBIDDEN);
+        if (!element.getBucket().getId().equals(bucketId)) {
+            throw new StudentException(ErrorStatus._BAD_REQUEST);
         }
 
         bucketElementRepository.delete(element);
     }
 
     @Override
-    public void updatePriorities(Long studentId, List<BucketPriorityRequestDTO> requests) {
+    public void updatePriorities(Long studentId, Long bucketId, List<BucketPriorityRequestDTO> requests) {
+        // 장바구니가 해당 학생의 것인지 검증
+        Bucket bucket = bucketRepository.findById(bucketId)
+                .orElseThrow(() -> new StudentException(ErrorStatus._BAD_REQUEST));
+
+        if (!bucket.getStudent().getId().equals(studentId)) {
+            throw new StudentException(ErrorStatus._FORBIDDEN);
+        }
+
         for (BucketPriorityRequestDTO req : requests) {
             BucketElement element = bucketElementRepository.findById(req.getBucketElementId())
                     .orElseThrow(() -> new StudentException(ErrorStatus._BAD_REQUEST));
 
-            if (!element.getBucket().getStudent().getId().equals(studentId)) {
-                throw new StudentException(ErrorStatus._FORBIDDEN);
+            if (!element.getBucket().getId().equals(bucketId)) {
+                throw new StudentException(ErrorStatus._BAD_REQUEST);
             }
 
             element.updatePriority(req.getPriority());
@@ -102,10 +128,16 @@ public class BucketServiceImpl implements BucketService {
     }
 
     @Override
-    public void updateAlternateCourse(Long studentId, BucketAlternateRequestDTO request) {
-        Long bucketId = getBestBucketId(studentId);
+    public void updateAlternateCourse(Long studentId, Long bucketId, Long bucketElementId, BucketAlternateRequestDTO request) {
+        // 장바구니가 해당 학생의 것인지 검증
+        Bucket bucket = bucketRepository.findById(bucketId)
+                .orElseThrow(() -> new StudentException(ErrorStatus._BAD_REQUEST));
 
-        BucketElement targetElement = bucketElementRepository.findById(request.getBucketElementId())
+        if (!bucket.getStudent().getId().equals(studentId)) {
+            throw new StudentException(ErrorStatus._FORBIDDEN);
+        }
+
+        BucketElement targetElement = bucketElementRepository.findById(bucketElementId)
                 .orElseThrow(() -> new StudentException(ErrorStatus._BAD_REQUEST));
 
         if (!targetElement.getBucket().getId().equals(bucketId)) {
@@ -124,6 +156,26 @@ public class BucketServiceImpl implements BucketService {
 
             targetElement.updateSubElement(altElement);
         }
+    }
+
+    @Override
+    public void removeAlternateCourse(Long studentId, Long bucketId, Long bucketElementId) {
+        // 장바구니가 해당 학생의 것인지 검증
+        Bucket bucket = bucketRepository.findById(bucketId)
+                .orElseThrow(() -> new StudentException(ErrorStatus._BAD_REQUEST));
+
+        if (!bucket.getStudent().getId().equals(studentId)) {
+            throw new StudentException(ErrorStatus._FORBIDDEN);
+        }
+
+        BucketElement targetElement = bucketElementRepository.findById(bucketElementId)
+                .orElseThrow(() -> new StudentException(ErrorStatus._BAD_REQUEST));
+
+        if (!targetElement.getBucket().getId().equals(bucketId)) {
+            throw new StudentException(ErrorStatus._FORBIDDEN);
+        }
+
+        targetElement.updateSubElement(null);
     }
 
     @Override
@@ -183,18 +235,18 @@ public class BucketServiceImpl implements BucketService {
     }
 
     @Override
-    public void setBestBucket(Long studentId, BucketSelectRequestDTO request) {
+    public void setBestBucket(Long studentId, Long bucketId) {
         Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new StudentException(ErrorStatus._BAD_REQUEST));
 
-        Bucket bucket = bucketRepository.findById(request.getBucketId())
+        Bucket bucket = bucketRepository.findById(bucketId)
                 .orElseThrow(() -> new StudentException(ErrorStatus._BAD_REQUEST));
 
         if (!bucket.getStudent().getId().equals(studentId)) {
             throw new StudentException(ErrorStatus._FORBIDDEN);
         }
 
-        student.changeBestBucket(request.getBucketId());
+        student.changeBestBucket(bucketId);
     }
 
     private Long getBestBucketId(Long studentId) {
