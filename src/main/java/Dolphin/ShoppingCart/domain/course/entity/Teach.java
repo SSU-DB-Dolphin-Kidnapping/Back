@@ -43,6 +43,7 @@ public class Teach extends BaseEntity {
     private Integer targetGrade;
 
     @Enumerated(EnumType.STRING)
+    @Column(length = 20)
     private TeachType type;   // 강의 유형
 
     private Integer maxCount; // 최대 인원

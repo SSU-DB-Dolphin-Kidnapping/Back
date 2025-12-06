@@ -70,6 +70,18 @@ public class StudentRegistrationService {
             Teach teach = teachRepository.findByIdWithLock(current.getTeach().getId())
                     .orElseThrow(() -> new IllegalStateException("Teach not found"));
 
+            // course_id 중복 체크
+            if (hasCourseIdConflict(teach, enrolledTeaches)) {
+                log.info("  ✗ {} - 실패 (동일 과목 중복 신청)", teach.getCourse().getName());
+                lastFailReason = "이미 동일한 과목을 신청했습니다";
+                current = current.getSubElement();
+
+                if (current != null) {
+                    log.info("    → 대체 과목 시도: {}", current.getTeach().getCourse().getName());
+                }
+                continue;
+            }
+
             // 시간대 충돌 체크
             if (hasTimeConflict(teach, enrolledTeaches)) {
                 log.info("  ✗ {} - 실패 (시간대 충돌)", teach.getCourse().getName());
@@ -100,6 +112,18 @@ public class StudentRegistrationService {
 
         // 마지막으로 시도한 과목의 실패 사유 반환
         return new RegistrationResult(false, lastFailReason != null ? lastFailReason : "정원 초과", null);
+    }
+
+    private boolean hasCourseIdConflict(Teach newTeach, List<Teach> enrolledTeaches) {
+        Long newCourseId = newTeach.getCourse().getId();
+
+        for (Teach enrolledTeach : enrolledTeaches) {
+            if (enrolledTeach.getCourse().getId().equals(newCourseId)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private boolean hasTimeConflict(Teach newTeach, List<Teach> enrolledTeaches) {

@@ -30,12 +30,22 @@ import org.springframework.web.bind.annotation.*;
 public class StudentController {
     private final StudentService studentService; // 생성자 주입 필요
 
+    @Operation(summary = "반응 속도 조회",
+            description = "현재 학생의 평균 반응 속도를 조회합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "반응 속도 조회 성공")
+    })
     @GetMapping("/reaction-time")
     public BaseResponse<Double> getReactionTime() {
         Long studentId = 1L; // 임시 ID (추후 SecurityContext 사용)
         return BaseResponse.onSuccess(SuccessStatus.OK, studentService.getReactionTime(studentId));
     }
 
+    @Operation(summary = "반응 속도 업데이트",
+            description = "학생의 평균 반응 속도를 업데이트합니다. 새로운 반응 시간을 기존 평균과 가중 평균하여 저장합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "반응 속도 업데이트 성공")
+    })
     @PatchMapping("/reaction-time")
     public BaseResponse<Void> updateReactionTime(@RequestBody StudentReactionRequestDTO request) {
         Long studentId = 1L; // 임시 ID
