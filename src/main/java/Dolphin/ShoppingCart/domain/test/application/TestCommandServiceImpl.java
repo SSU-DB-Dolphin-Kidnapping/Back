@@ -77,7 +77,10 @@ public class TestCommandServiceImpl implements TestCommandService {
             }
         }
 
-        tasks.sort(Comparator.comparing(task -> task.student.getAvgReactionTime()));
+        tasks.sort(Comparator.comparing(
+                task -> task.student.getAvgReactionTime(),
+                Comparator.nullsLast(Double::compareTo)
+        ));
         log.info("시뮬레이션 대상 학생: {} 명", tasks.size());
 
         return tasks;
