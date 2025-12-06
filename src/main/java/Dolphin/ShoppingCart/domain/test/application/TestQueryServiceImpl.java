@@ -57,7 +57,7 @@ public class TestQueryServiceImpl implements TestQueryService {
             throw new TestException(TestErrorCode.BEST_BUCKET_NOT_SET);
         }
 
-        Bucket bucket = bucketRepository.findById(student.getBestBucket())
+        Bucket bucket = bucketRepository.findByIdWithElements(student.getBestBucket())
                 .orElseThrow(() -> new TestException(TestErrorCode.BUCKET_NOT_FOUND));
 
         Test test = testRepository.findById(testId)

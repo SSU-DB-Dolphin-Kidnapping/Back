@@ -28,5 +28,6 @@ public class Bucket extends BaseEntity {
     private String name;
 
     @OneToMany(mappedBy = "bucket", fetch = FetchType.LAZY)
+    @org.hibernate.annotations.BatchSize(size = 100)
     private List<BucketElement> bucketElements;
 }
