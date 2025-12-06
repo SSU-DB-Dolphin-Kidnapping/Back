@@ -51,6 +51,7 @@ public class Teach extends BaseEntity {
     private Integer remainCount; // 잔여 인원
 
     @OneToMany(mappedBy = "teach", fetch = FetchType.LAZY)
+    @org.hibernate.annotations.BatchSize(size = 100)
     private List<TeachInfo> teachInfos;
 
     @OneToMany(mappedBy = "teach", fetch = FetchType.LAZY)
