@@ -60,7 +60,7 @@ public class TestCommandServiceImpl implements TestCommandService {
 
     @Transactional
     protected void resetTeachCounts() {
-        List<Teach> teaches = teachRepository.findAll();
+        List<Teach> teaches = teachRepository.findAllWithTeachInfos();
         teaches.forEach(Teach::resetCounts);
         teachRepository.saveAll(teaches);
         log.info("Teach 카운트 초기화 완료: {} 개", teaches.size());
@@ -72,12 +72,15 @@ public class TestCommandServiceImpl implements TestCommandService {
 
         for (Student student : students) {
             if (student.getBestBucket() != null) {
-                bucketRepository.findById(student.getBestBucket())
+                bucketRepository.findByIdWithElements(student.getBestBucket())
                         .ifPresent(bucket -> tasks.add(new SimulationTask(student, bucket)));
             }
         }
 
-        tasks.sort(Comparator.comparing(task -> task.student.getAvgReactionTime()));
+        tasks.sort(Comparator.comparing(
+                task -> task.student.getAvgReactionTime(),
+                Comparator.nullsLast(Double::compareTo)
+        ));
         log.info("시뮬레이션 대상 학생: {} 명", tasks.size());
 
         return tasks;

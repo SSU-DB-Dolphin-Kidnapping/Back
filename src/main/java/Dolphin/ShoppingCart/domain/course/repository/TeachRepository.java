@@ -14,8 +14,19 @@ import java.util.Optional;
 public interface TeachRepository extends JpaRepository<Teach, Long>{
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT t FROM Teach t WHERE t.id = :id")
+    @Query("""
+        SELECT DISTINCT t FROM Teach t
+        LEFT JOIN FETCH t.course c
+        LEFT JOIN FETCH t.teachInfos
+        WHERE t.id = :id
+        """)
     Optional<Teach> findByIdWithLock(@Param("id") Long id);
+
+    @Query("""
+        SELECT DISTINCT t FROM Teach t
+        LEFT JOIN FETCH t.teachInfos
+        """)
+    List<Teach> findAllWithTeachInfos();
 
     // 페이징 + 검색
     @Query("""

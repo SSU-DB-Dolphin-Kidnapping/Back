@@ -146,84 +146,192 @@ INSERT INTO bucket (id, student_id, name, created_at, updated_at) VALUES
 -- - teach 34 (데이터베이스응용 가반, course_id=13, 화 15:00-16:15, 금 12:00-13:15)
 -- - teach 32 (네트워크보안 가반, course_id=12, 수 09:00-10:15, 목 10:30-11:45)
 -- - teach 41 (운영체제 가반, course_id=16, 월 09:00-10:15, 월 10:30-11:45)
--- → 시간 겹치지 않고, course_id 모두 다르고, 정원 충분 → 모두 성공 ✅
+-- → 시간 겹치지 않고, course_id 모두 다르고, 정원 충분 → 모두 성공
 INSERT INTO bucket_element (id, teach_id, bucket_id, priority, sub_element_id, created_at, updated_at) VALUES
 (1, 34, 1, 1, NULL, NOW(), NOW()),
 (2, 32, 1, 2, NULL, NOW(), NOW()),
 (3, 41, 1, 3, NULL, NOW(), NOW()),
 
 -- [Bucket 2] 정원 초과 + 대체 성공 장바구니
--- - teach 38 (소프트웨어분석및설계 가반, course_id=15, 정원 50) → 정원 초과로 실패 ❌
--- - sub_element: teach 39 (소프트웨어분석및설계 나반, course_id=15, 정원 52) → 대체되어 성공 ✅
+-- - teach 38 (소프트웨어분석및설계 가반, course_id=15, 정원 50) → 정원 초과로 실패
+-- - sub_element: teach 39 (소프트웨어분석및설계 나반, course_id=15, 정원 52) → 대체되어 성공
 -- 학생 2-50 (49명)이 teach 38에 신청하여 정원 50 채움
 -- → teach 38 실패 시 sub_element_id=5인 teach 39로 자동 대체
 (4, 38, 2, 1, 5, NOW(), NOW()),      -- 메인 과목 (정원 초과 실패 예상, 대체 과목 ID=5)
 (5, 39, 2, 2, NULL, NOW(), NOW()),   -- 대체 과목 (teach 38 실패 시 이걸로 대체)
 
 -- [Bucket 3] 시간대 충돌 장바구니
--- - teach 38 (월수 12:00-13:15) → 성공 ✅
--- - teach 42 (월 12:00-13:15, 월 13:30-14:45) → 시간 충돌로 실패 ❌
+-- - teach 38 (월수 12:00-13:15) → 성공
+-- - teach 42 (월 12:00-13:15, 월 13:30-14:45) → 시간 충돌로 실패
 (6, 38, 3, 1, NULL, NOW(), NOW()),
 (7, 42, 3, 2, NULL, NOW(), NOW()),
 
 -- [Bucket 4] 같은 course_id 장바구니
--- - teach 38 (course_id=15) → 성공 ✅
--- - teach 39 (course_id=15) → course_id 중복으로 실패 ❌
+-- - teach 38 (course_id=15) → 성공
+-- - teach 39 (course_id=15) → course_id 중복으로 실패
 (8, 38, 4, 1, NULL, NOW(), NOW()),
 (9, 39, 4, 2, NULL, NOW(), NOW());
 
--- 학생 2-50 (49명): teach 38에 우선순위 1로 신청하여 정원 50명 채우기
--- → Bucket 2의 teach 38이 정원 초과로 실패하도록 만듦
+-- 학생 2-50 (49명): teach 38을 1순위로 신청하되, 2-3순위는 다양하게
+-- 정원 50명에 49명이 신청 → 치열한 경쟁 상황
+
+-- 학생 2-11: 소분설(38) 1순위 + 운영체제(41) + 데이터베이스응용(34) (10명)
 INSERT INTO bucket_element (teach_id, bucket_id, priority, sub_element_id, created_at, updated_at) VALUES
 (38, 5, 1, NULL, NOW(), NOW()),
+(41, 5, 2, NULL, NOW(), NOW()),
+(34, 5, 3, NULL, NOW(), NOW()),
 (38, 6, 1, NULL, NOW(), NOW()),
+(41, 6, 2, NULL, NOW(), NOW()),
+(34, 6, 3, NULL, NOW(), NOW()),
 (38, 7, 1, NULL, NOW(), NOW()),
+(41, 7, 2, NULL, NOW(), NOW()),
+(34, 7, 3, NULL, NOW(), NOW()),
 (38, 8, 1, NULL, NOW(), NOW()),
+(41, 8, 2, NULL, NOW(), NOW()),
+(34, 8, 3, NULL, NOW(), NOW()),
 (38, 9, 1, NULL, NOW(), NOW()),
+(41, 9, 2, NULL, NOW(), NOW()),
+(34, 9, 3, NULL, NOW(), NOW()),
 (38, 10, 1, NULL, NOW(), NOW()),
+(41, 10, 2, NULL, NOW(), NOW()),
+(34, 10, 3, NULL, NOW(), NOW()),
 (38, 11, 1, NULL, NOW(), NOW()),
+(41, 11, 2, NULL, NOW(), NOW()),
+(34, 11, 3, NULL, NOW(), NOW()),
 (38, 12, 1, NULL, NOW(), NOW()),
+(41, 12, 2, NULL, NOW(), NOW()),
+(34, 12, 3, NULL, NOW(), NOW()),
 (38, 13, 1, NULL, NOW(), NOW()),
+(41, 13, 2, NULL, NOW(), NOW()),
+(34, 13, 3, NULL, NOW(), NOW()),
 (38, 14, 1, NULL, NOW(), NOW()),
+(41, 14, 2, NULL, NOW(), NOW()),
+(34, 14, 3, NULL, NOW(), NOW()),
+
+-- 학생 12-21: 소분설(38) 1순위 + 네트워크보안(32) + 데이터베이스응용(35) (10명)
 (38, 15, 1, NULL, NOW(), NOW()),
+(32, 15, 2, NULL, NOW(), NOW()),
+(35, 15, 3, NULL, NOW(), NOW()),
 (38, 16, 1, NULL, NOW(), NOW()),
+(32, 16, 2, NULL, NOW(), NOW()),
+(35, 16, 3, NULL, NOW(), NOW()),
 (38, 17, 1, NULL, NOW(), NOW()),
+(32, 17, 2, NULL, NOW(), NOW()),
+(35, 17, 3, NULL, NOW(), NOW()),
 (38, 18, 1, NULL, NOW(), NOW()),
+(32, 18, 2, NULL, NOW(), NOW()),
+(35, 18, 3, NULL, NOW(), NOW()),
 (38, 19, 1, NULL, NOW(), NOW()),
+(32, 19, 2, NULL, NOW(), NOW()),
+(35, 19, 3, NULL, NOW(), NOW()),
 (38, 20, 1, NULL, NOW(), NOW()),
+(32, 20, 2, NULL, NOW(), NOW()),
+(35, 20, 3, NULL, NOW(), NOW()),
 (38, 21, 1, NULL, NOW(), NOW()),
+(32, 21, 2, NULL, NOW(), NOW()),
+(35, 21, 3, NULL, NOW(), NOW()),
 (38, 22, 1, NULL, NOW(), NOW()),
+(32, 22, 2, NULL, NOW(), NOW()),
+(35, 22, 3, NULL, NOW(), NOW()),
 (38, 23, 1, NULL, NOW(), NOW()),
+(32, 23, 2, NULL, NOW(), NOW()),
+(35, 23, 3, NULL, NOW(), NOW()),
 (38, 24, 1, NULL, NOW(), NOW()),
+(32, 24, 2, NULL, NOW(), NOW()),
+(35, 24, 3, NULL, NOW(), NOW()),
+
+-- 학생 22-31: 소분설(38) 1순위 + 운영체제(42) + 데이터사이언스(37) (10명)
 (38, 25, 1, NULL, NOW(), NOW()),
+(42, 25, 2, NULL, NOW(), NOW()),
+(37, 25, 3, NULL, NOW(), NOW()),
 (38, 26, 1, NULL, NOW(), NOW()),
+(42, 26, 2, NULL, NOW(), NOW()),
+(37, 26, 3, NULL, NOW(), NOW()),
 (38, 27, 1, NULL, NOW(), NOW()),
+(42, 27, 2, NULL, NOW(), NOW()),
+(37, 27, 3, NULL, NOW(), NOW()),
 (38, 28, 1, NULL, NOW(), NOW()),
+(42, 28, 2, NULL, NOW(), NOW()),
+(37, 28, 3, NULL, NOW(), NOW()),
 (38, 29, 1, NULL, NOW(), NOW()),
+(42, 29, 2, NULL, NOW(), NOW()),
+(37, 29, 3, NULL, NOW(), NOW()),
 (38, 30, 1, NULL, NOW(), NOW()),
+(42, 30, 2, NULL, NOW(), NOW()),
+(37, 30, 3, NULL, NOW(), NOW()),
 (38, 31, 1, NULL, NOW(), NOW()),
+(42, 31, 2, NULL, NOW(), NOW()),
+(37, 31, 3, NULL, NOW(), NOW()),
 (38, 32, 1, NULL, NOW(), NOW()),
+(42, 32, 2, NULL, NOW(), NOW()),
+(37, 32, 3, NULL, NOW(), NOW()),
 (38, 33, 1, NULL, NOW(), NOW()),
+(42, 33, 2, NULL, NOW(), NOW()),
+(37, 33, 3, NULL, NOW(), NOW()),
 (38, 34, 1, NULL, NOW(), NOW()),
+(42, 34, 2, NULL, NOW(), NOW()),
+(37, 34, 3, NULL, NOW(), NOW()),
+
+-- 학생 32-41: 소분설(38) 1순위 + 데이터베이스응용(36) + 네트워크보안(33) (10명)
 (38, 35, 1, NULL, NOW(), NOW()),
+(36, 35, 2, NULL, NOW(), NOW()),
+(33, 35, 3, NULL, NOW(), NOW()),
 (38, 36, 1, NULL, NOW(), NOW()),
+(36, 36, 2, NULL, NOW(), NOW()),
+(33, 36, 3, NULL, NOW(), NOW()),
 (38, 37, 1, NULL, NOW(), NOW()),
+(36, 37, 2, NULL, NOW(), NOW()),
+(33, 37, 3, NULL, NOW(), NOW()),
 (38, 38, 1, NULL, NOW(), NOW()),
+(36, 38, 2, NULL, NOW(), NOW()),
+(33, 38, 3, NULL, NOW(), NOW()),
 (38, 39, 1, NULL, NOW(), NOW()),
+(36, 39, 2, NULL, NOW(), NOW()),
+(33, 39, 3, NULL, NOW(), NOW()),
 (38, 40, 1, NULL, NOW(), NOW()),
+(36, 40, 2, NULL, NOW(), NOW()),
+(33, 40, 3, NULL, NOW(), NOW()),
 (38, 41, 1, NULL, NOW(), NOW()),
+(36, 41, 2, NULL, NOW(), NOW()),
+(33, 41, 3, NULL, NOW(), NOW()),
 (38, 42, 1, NULL, NOW(), NOW()),
+(36, 42, 2, NULL, NOW(), NOW()),
+(33, 42, 3, NULL, NOW(), NOW()),
 (38, 43, 1, NULL, NOW(), NOW()),
+(36, 43, 2, NULL, NOW(), NOW()),
+(33, 43, 3, NULL, NOW(), NOW()),
 (38, 44, 1, NULL, NOW(), NOW()),
+(36, 44, 2, NULL, NOW(), NOW()),
+(33, 44, 3, NULL, NOW(), NOW()),
+
+-- 학생 42-50: 소분설(38) 1순위 + 운영체제(43) + 데이터베이스응용(34) (9명)
 (38, 45, 1, NULL, NOW(), NOW()),
+(43, 45, 2, NULL, NOW(), NOW()),
+(34, 45, 3, NULL, NOW(), NOW()),
 (38, 46, 1, NULL, NOW(), NOW()),
+(43, 46, 2, NULL, NOW(), NOW()),
+(34, 46, 3, NULL, NOW(), NOW()),
 (38, 47, 1, NULL, NOW(), NOW()),
+(43, 47, 2, NULL, NOW(), NOW()),
+(34, 47, 3, NULL, NOW(), NOW()),
 (38, 48, 1, NULL, NOW(), NOW()),
+(43, 48, 2, NULL, NOW(), NOW()),
+(34, 48, 3, NULL, NOW(), NOW()),
 (38, 49, 1, NULL, NOW(), NOW()),
+(43, 49, 2, NULL, NOW(), NOW()),
+(34, 49, 3, NULL, NOW(), NOW()),
 (38, 50, 1, NULL, NOW(), NOW()),
+(43, 50, 2, NULL, NOW(), NOW()),
+(34, 50, 3, NULL, NOW(), NOW()),
 (38, 51, 1, NULL, NOW(), NOW()),
+(43, 51, 2, NULL, NOW(), NOW()),
+(34, 51, 3, NULL, NOW(), NOW()),
 (38, 52, 1, NULL, NOW(), NOW()),
-(38, 53, 1, NULL, NOW(), NOW());
+(43, 52, 2, NULL, NOW(), NOW()),
+(34, 52, 3, NULL, NOW(), NOW()),
+(38, 53, 1, NULL, NOW(), NOW()),
+(43, 53, 2, NULL, NOW(), NOW()),
+(34, 53, 3, NULL, NOW(), NOW());
 
 
 SET FOREIGN_KEY_CHECKS = 1;
@@ -234,6 +342,7 @@ SET FOREIGN_KEY_CHECKS = 1;
 --
 -- [학생 설정]
 -- - 모든 학생: 3학년 (target_grade=3 또는 NULL인 강의만 신청 가능)
+-- - 총 50명 (학생 1-50)
 --
 -- [수강신청 제약사항 3가지]
 -- 1. 정원 초과: max_count를 초과하면 실패
@@ -242,47 +351,79 @@ SET FOREIGN_KEY_CHECKS = 1;
 --
 -- [학생 1 테스트 시나리오 - 4개 장바구니로 모든 제약사항 테스트]
 --
--- **Bucket 1: 모두 성공 장바구니**
+-- Bucket 1: 모두 성공 장바구니
 --   - teach 34 (데이터베이스응용 가반, course_id=13)
 --   - teach 32 (네트워크보안 가반, course_id=12)
 --   - teach 41 (운영체제 가반, course_id=16)
 --   → 시간 겹치지 않고, course_id 모두 다르고, 정원 충분
---   **결과: 3개 모두 성공 ✅✅✅**
+--   결과: 3개 모두 성공
 --
--- **Bucket 2: 정원 초과 + 대체 성공 장바구니**
+-- Bucket 2: 정원 초과 + 대체 성공 장바구니
 --   - teach 38 (소프트웨어분석및설계 가반, course_id=15, 정원 50)
 --     - sub_element_id=5로 대체 과목 지정
---     - 학생 2-50 (49명)이 우선순위 1로 신청하여 정원 50 채움
---     → 정원 초과로 실패 ❌
+--     - 학생 12-41 (30명)이 teach 38 신청하여 정원 경쟁 발생
+--     → 정원 초과로 실패
 --   - teach 39 (소프트웨어분석및설계 나반, course_id=15, 정원 52)
 --     - teach 38 실패 시 이 과목으로 자동 대체
---     → 대체되어 성공 ✅
---   **결과: teach 38 실패 → teach 39로 대체 성공**
+--     → 대체되어 성공
+--   결과: teach 38 실패 → teach 39로 대체 성공
 --
--- **Bucket 3: 시간대 충돌 장바구니**
---   - teach 38 (월수 12:00-13:15) → 성공 ✅
+-- Bucket 3: 시간대 충돌 장바구니
+--   - teach 38 (월수 12:00-13:15) → 성공
 --   - teach 42 (월 12:00-13:15, 월 13:30-14:45)
---     → teach 38과 월 12:00-13:15 시간 충돌로 실패 ❌
---   **결과: 1개 성공, 1개 실패 (시간 충돌)**
+--     → teach 38과 월 12:00-13:15 시간 충돌로 실패
+--   결과: 1개 성공, 1개 실패 (시간 충돌)
 --
--- **Bucket 4: 같은 course_id 장바구니**
---   - teach 38 (course_id=15) → 성공 ✅
+-- Bucket 4: 같은 course_id 장바구니
+--   - teach 38 (course_id=15) → 성공
 --   - teach 39 (course_id=15)
---     → teach 38과 같은 course_id로 실패 ❌
---   **결과: 1개 성공, 1개 실패 (course_id 중복)**
+--     → teach 38과 같은 course_id로 실패
+--   결과: 1개 성공, 1개 실패 (course_id 중복)
 --
--- [정원 관리 메커니즘]
--- - teach 38: 정원 50명
--- - 학생 2-50 (49명): 모두 우선순위 1로 teach 38 신청
--- - Bucket 2의 teach 38: 우선순위 1, 정원 초과 예상
--- - Bucket 3, 4의 teach 38: 학생 2-50보다 먼저 신청하여 성공
+-- [학생 2-50 다양한 수강신청 시나리오]
+-- 모든 학생 49명이 teach 38 (소프트웨어분석및설계 가반)을 1순위로 신청!
+-- 정원 50명 vs 49명 신청 → 반응 시간에 따라 1명만 탈락하는 치열한 경쟁
 --
--- [시간표 정보]
--- - teach 38: 월 12:00-13:15, 수 12:00-13:15 (course_id=15)
--- - teach 39: 월 15:00-16:15, 수 15:00-16:15 (course_id=15)
--- - teach 42: 월 12:00-13:15, 월 13:30-14:45 (course_id=16)
--- - teach 34: 화 15:00-16:15, 금 12:00-13:15 (course_id=13)
--- - teach 32: 수 09:00-10:15, 목 10:30-11:45 (course_id=12)
--- - teach 41: 월 09:00-10:15, 월 10:30-11:45 (course_id=16)
+-- 그룹 1 (학생 2-11, 10명): 소분설(38) + 운영체제(41) + DB응용(34)
+--   1순위: teach 38 (정원 50)
+--   2순위: teach 41 (운영체제 가반, 정원 50)
+--   3순위: teach 34 (데이터베이스응용 가반, 정원 50)
+--
+-- 그룹 2 (학생 12-21, 10명): 소분설(38) + 네트워크보안(32) + DB응용(35)
+--   1순위: teach 38 (정원 50)
+--   2순위: teach 32 (네트워크보안 가반, 정원 40)
+--   3순위: teach 35 (데이터베이스응용 나반, 정원 50)
+--
+-- 그룹 3 (학생 22-31, 10명): 소분설(38) + 운영체제(42) + 데이터사이언스(37)
+--   1순위: teach 38 (정원 50)
+--   2순위: teach 42 (운영체제 나반, 정원 46)
+--   3순위: teach 37 (데이터사이언스, 정원 60)
+--
+-- 그룹 4 (학생 32-41, 10명): 소분설(38) + DB응용(36) + 네트워크보안(33)
+--   1순위: teach 38 (정원 50)
+--   2순위: teach 36 (데이터베이스응용 다반, 정원 48)
+--   3순위: teach 33 (네트워크보안 나반, 정원 40)
+--
+-- 그룹 5 (학생 42-50, 9명): 소분설(38) + 운영체제(43) + DB응용(34)
+--   1순위: teach 38 (정원 50)
+--   2순위: teach 43 (운영체제 다반, 정원 46)
+--   3순위: teach 34 (데이터베이스응용 가반, 정원 50)
+--
+-- [정원 경쟁 상황]
+-- - teach 38 (소분설 가반): 49명 신청 → 정원 50명 (1자리만 남음! 초치열 경쟁)
+-- - teach 41 (운체 가반): 10명 신청 (2, 3순위) → 정원 50명
+-- - teach 34 (DB응용 가반): 19명 신청 (2, 3순위) → 정원 50명
+-- - teach 32 (네보 가반): 10명 신청 (2순위) → 정원 40명
+-- - teach 35 (DB응용 나반): 10명 신청 (3순위) → 정원 50명
+-- - teach 42 (운체 나반): 10명 신청 (2순위) → 정원 46명
+-- - teach 37 (데이터사이언스): 10명 신청 (3순위) → 정원 60명
+-- - teach 36 (DB응용 다반): 10명 신청 (2순위) → 정원 48명
+-- - teach 33 (네보 나반): 10명 신청 (3순위) → 정원 40명
+-- - teach 43 (운체 다반): 9명 신청 (2순위) → 정원 46명
+--
+-- [반응 시간에 따른 경쟁]
+-- - 모든 학생이 서로 다른 avg_reaction_time을 가짐 (0.28~0.42초)
+-- - 반응 시간이 빠른 학생이 먼저 수강신청 → 정원 경쟁에서 유리
+-- - 인기 과목(teach 38)은 반응 시간에 따라 성공/실패가 갈릴 수 있음
 --
 -- ========================================
