@@ -4,6 +4,13 @@ spring:
     password: ${LOCAL_DB_PASSWORD}
     url: ${LOCAL_DB_URL}
     driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      minimum-idle: 10
+      maximum-pool-size: 60
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      pool-name: HikariPool-Simulation
 
   jpa:
     hibernate:
