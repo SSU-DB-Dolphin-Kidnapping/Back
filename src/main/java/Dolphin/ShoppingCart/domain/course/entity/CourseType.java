@@ -25,6 +25,6 @@ public class CourseType extends BaseEntity {
     private Course course;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 20)
     private SecondMajorType secondMajor;
 }
