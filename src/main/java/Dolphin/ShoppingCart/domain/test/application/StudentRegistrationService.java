@@ -15,7 +15,9 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -37,18 +39,17 @@ public class StudentRegistrationService {
         // 학생별 등록된 과목 리스트
         List<Teach> enrolledTeaches = new ArrayList<>();
 
-        for (BucketElement element : task.bucket.getBucketElements()) {
-            RegistrationResult result = tryRegisterCourse(element, enrolledTeaches);
+        // 이미 처리된 element ID 추적 (대체 과목으로 처리된 경우)
+        Set<Long> processedElementIds = new HashSet<>();
 
-            // History 즉시 저장 (실제 수강신청과 동일)
-            BucketElement managedElement = entityManager.getReference(BucketElement.class, element.getId());
-            History history = History.create(
-                    managedElement,
-                    test,
-                    result.enrolled,
-                    result.failReason
-            );
-            historyRepository.save(history);
+        for (BucketElement element : task.bucket.getBucketElements()) {
+            // 이미 대체 과목으로 처리된 element는 건너뛰기
+            if (processedElementIds.contains(element.getId())) {
+                log.info("  → {} 는 이미 대체 과목으로 처리됨 (건너뜀)", element.getTeach().getCourse().getName());
+                continue;
+            }
+
+            RegistrationResult result = tryRegisterCourseWithHistory(element, enrolledTeaches, test, processedElementIds);
 
             if (result.enrolled) {
                 successCount++;
@@ -61,23 +62,27 @@ public class StudentRegistrationService {
         return new StudentRegistrationResult(successCount, failCount);
     }
 
-    private RegistrationResult tryRegisterCourse(BucketElement element, List<Teach> enrolledTeaches) {
+    private RegistrationResult tryRegisterCourseWithHistory(BucketElement element, List<Teach> enrolledTeaches, Test test, Set<Long> processedElementIds) {
         BucketElement current = element;
         String lastFailReason = null;
 
         while (current != null) {
-            // 비관적 락으로 Teach 조회 (실제 수강신청과 동일)
-            Teach teach = teachRepository.findByIdWithLock(current.getTeach().getId())
+            // 락 없이 Teach 조회 (빠른 처리)
+            Teach teach = teachRepository.findByIdWithDetails(current.getTeach().getId())
                     .orElseThrow(() -> new IllegalStateException("Teach not found"));
 
             // course_id 중복 체크
             if (hasCourseIdConflict(teach, enrolledTeaches)) {
                 log.info("  ✗ {} - 실패 (동일 과목 중복 신청)", teach.getCourse().getName());
                 lastFailReason = "이미 동일한 과목을 신청했습니다";
+                // 실패 History 저장
+                saveHistory(current, test, false, lastFailReason);
                 current = current.getSubElement();
 
                 if (current != null) {
                     log.info("    → 대체 과목 시도: {}", current.getTeach().getCourse().getName());
+                    // 대체 과목 element ID를 processedElementIds에 추가
+                    processedElementIds.add(current.getId());
                 }
                 continue;
             }
@@ -86,32 +91,59 @@ public class StudentRegistrationService {
             if (hasTimeConflict(teach, enrolledTeaches)) {
                 log.info("  ✗ {} - 실패 (시간대 충돌)", teach.getCourse().getName());
                 lastFailReason = "신청하려는 시간대에 이미 과목이 있습니다";
+                // 실패 History 저장
+                saveHistory(current, test, false, lastFailReason);
                 current = current.getSubElement();
 
                 if (current != null) {
                     log.info("    → 대체 과목 시도: {}", current.getTeach().getCourse().getName());
+                    // 대체 과목 element ID를 processedElementIds에 추가
+                    processedElementIds.add(current.getId());
                 }
                 continue;
             }
 
-            // 정원 체크 및 등록
-            if (teach.tryEnroll()) {
+            // 원자적 UPDATE로 등록 (비관적 락 없이 빠른 처리)
+            int updatedRows = teachRepository.tryEnrollAtomic(teach.getId());
+
+            if (updatedRows > 0) {
+                // 성공: DB에서 1개 row 업데이트됨
                 log.info("  ✓ {} - 성공", teach.getCourse().getName());
-                teachRepository.save(teach);  // 변경사항 즉시 저장
+                // 최신 데이터 다시 조회 (enrolledCount, remainCount 업데이트)
+                teach = teachRepository.findById(teach.getId()).orElseThrow();
+                // 성공 History 저장
+                saveHistory(current, test, true, null);
+
+                // 대체 과목으로 성공한 경우, 해당 element를 processed에 추가
+                if (current.getId() != element.getId()) {
+                    processedElementIds.add(current.getId());
+                }
+
                 return new RegistrationResult(true, null, teach);
             }
 
+            // 실패: 정원 초과 (remainCount가 0이었음)
             log.info("  ✗ {} - 실패 (정원 초과)", teach.getCourse().getName());
             lastFailReason = "정원 초과";
+            // 실패 History 저장
+            saveHistory(current, test, false, lastFailReason);
             current = current.getSubElement();
 
             if (current != null) {
                 log.info("    → 대체 과목 시도: {}", current.getTeach().getCourse().getName());
+                // 대체 과목 element ID를 processedElementIds에 추가
+                processedElementIds.add(current.getId());
             }
         }
 
         // 마지막으로 시도한 과목의 실패 사유 반환
         return new RegistrationResult(false, lastFailReason != null ? lastFailReason : "정원 초과", null);
+    }
+
+    private void saveHistory(BucketElement element, Test test, boolean success, String failReason) {
+        BucketElement managedElement = entityManager.getReference(BucketElement.class, element.getId());
+        History history = History.create(managedElement, test, success, failReason);
+        historyRepository.save(history);
     }
 
     private boolean hasCourseIdConflict(Teach newTeach, List<Teach> enrolledTeaches) {
