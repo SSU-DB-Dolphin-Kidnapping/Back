@@ -15,7 +15,9 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -37,8 +39,17 @@ public class StudentRegistrationService {
         // 학생별 등록된 과목 리스트
         List<Teach> enrolledTeaches = new ArrayList<>();
 
+        // 이미 처리된 element ID 추적 (대체 과목으로 처리된 경우)
+        Set<Long> processedElementIds = new HashSet<>();
+
         for (BucketElement element : task.bucket.getBucketElements()) {
-            RegistrationResult result = tryRegisterCourseWithHistory(element, enrolledTeaches, test);
+            // 이미 대체 과목으로 처리된 element는 건너뛰기
+            if (processedElementIds.contains(element.getId())) {
+                log.info("  → {} 는 이미 대체 과목으로 처리됨 (건너뜀)", element.getTeach().getCourse().getName());
+                continue;
+            }
+
+            RegistrationResult result = tryRegisterCourseWithHistory(element, enrolledTeaches, test, processedElementIds);
 
             if (result.enrolled) {
                 successCount++;
@@ -51,7 +62,7 @@ public class StudentRegistrationService {
         return new StudentRegistrationResult(successCount, failCount);
     }
 
-    private RegistrationResult tryRegisterCourseWithHistory(BucketElement element, List<Teach> enrolledTeaches, Test test) {
+    private RegistrationResult tryRegisterCourseWithHistory(BucketElement element, List<Teach> enrolledTeaches, Test test, Set<Long> processedElementIds) {
         BucketElement current = element;
         String lastFailReason = null;
 
@@ -70,6 +81,8 @@ public class StudentRegistrationService {
 
                 if (current != null) {
                     log.info("    → 대체 과목 시도: {}", current.getTeach().getCourse().getName());
+                    // 대체 과목 element ID를 processedElementIds에 추가
+                    processedElementIds.add(current.getId());
                 }
                 continue;
             }
@@ -84,6 +97,8 @@ public class StudentRegistrationService {
 
                 if (current != null) {
                     log.info("    → 대체 과목 시도: {}", current.getTeach().getCourse().getName());
+                    // 대체 과목 element ID를 processedElementIds에 추가
+                    processedElementIds.add(current.getId());
                 }
                 continue;
             }
@@ -98,6 +113,12 @@ public class StudentRegistrationService {
                 teach = teachRepository.findById(teach.getId()).orElseThrow();
                 // 성공 History 저장
                 saveHistory(current, test, true, null);
+
+                // 대체 과목으로 성공한 경우, 해당 element를 processed에 추가
+                if (current.getId() != element.getId()) {
+                    processedElementIds.add(current.getId());
+                }
+
                 return new RegistrationResult(true, null, teach);
             }
 
@@ -110,6 +131,8 @@ public class StudentRegistrationService {
 
             if (current != null) {
                 log.info("    → 대체 과목 시도: {}", current.getTeach().getCourse().getName());
+                // 대체 과목 element ID를 processedElementIds에 추가
+                processedElementIds.add(current.getId());
             }
         }
 
