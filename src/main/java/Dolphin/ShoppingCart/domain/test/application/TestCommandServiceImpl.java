@@ -94,8 +94,9 @@ public class TestCommandServiceImpl implements TestCommandService {
         CountDownLatch startSignal = new CountDownLatch(1);
         CountDownLatch doneSignal = new CountDownLatch(tasks.size());
 
-        // 스레드 풀 생성
+        // 스레드 풀 생성 (실제 수강신청처럼 모든 학생이 동시에 경쟁)
         ExecutorService executorService = Executors.newFixedThreadPool(tasks.size());
+        log.info("시뮬레이션 학생 수: {} (모두 동시 실행)", tasks.size());
 
         log.info("=== 멀티스레드 시뮬레이션 시작 ===");
 
@@ -108,16 +109,42 @@ public class TestCommandServiceImpl implements TestCommandService {
                     // 학생의 반응 시간만큼 대기
                     waitForReactionTime(task.student);
 
-                    // 각 학생별로 독립적인 트랜잭션으로 처리 (프록시를 통해 REQUIRES_NEW 작동)
-                    StudentRegistrationService.StudentRegistrationResult result =
-                            studentRegistrationService.processStudentRegistration(task, test);
+                    // 락 타임아웃 시 재시도 (최대 3번)
+                    StudentRegistrationService.StudentRegistrationResult result = null;
+                    int retryCount = 0;
+                    int maxRetries = 3;
 
-                    totalSuccess.addAndGet(result.successCount);
-                    totalFail.addAndGet(result.failCount);
+                    while (retryCount < maxRetries) {
+                        try {
+                            result = studentRegistrationService.processStudentRegistration(task, test);
+                            break;  // 성공하면 루프 탈출
+                        } catch (Exception e) {
+                            if (e.getMessage() != null && e.getMessage().contains("Lock wait timeout")) {
+                                retryCount++;
+                                if (retryCount < maxRetries) {
+                                    log.warn("학생 {} 락 타임아웃, 재시도 {}/{}",
+                                            task.student.getStudentName(), retryCount, maxRetries);
+                                    Thread.sleep(100);  // 100ms 대기 후 재시도
+                                } else {
+                                    log.error("학생 {} 락 타임아웃 최대 재시도 초과", task.student.getStudentName());
+                                    result = new StudentRegistrationService.StudentRegistrationResult(0, task.bucket.getBucketElements().size());
+                                }
+                            } else {
+                                throw e;  // 다른 예외는 그대로 throw
+                            }
+                        }
+                    }
+
+                    if (result != null) {
+                        totalSuccess.addAndGet(result.successCount);
+                        totalFail.addAndGet(result.failCount);
+                    }
 
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     log.error("학생 {} 처리 중 인터럽트 발생", task.student.getStudentName(), e);
+                } catch (Exception e) {
+                    log.error("학생 {} 처리 중 예외 발생", task.student.getStudentName(), e);
                 } finally {
                     doneSignal.countDown();
                 }

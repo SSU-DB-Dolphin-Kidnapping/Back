@@ -66,8 +66,8 @@ public class StudentRegistrationService {
         String lastFailReason = null;
 
         while (current != null) {
-            // 비관적 락으로 Teach 조회 (실제 수강신청과 동일)
-            Teach teach = teachRepository.findByIdWithLock(current.getTeach().getId())
+            // 락 없이 Teach 조회 (빠른 처리)
+            Teach teach = teachRepository.findByIdWithDetails(current.getTeach().getId())
                     .orElseThrow(() -> new IllegalStateException("Teach not found"));
 
             // course_id 중복 체크
@@ -94,13 +94,18 @@ public class StudentRegistrationService {
                 continue;
             }
 
-            // 정원 체크 및 등록
-            if (teach.tryEnroll()) {
+            // 원자적 UPDATE로 등록 (비관적 락 없이 빠른 처리)
+            int updatedRows = teachRepository.tryEnrollAtomic(teach.getId());
+
+            if (updatedRows > 0) {
+                // 성공: DB에서 1개 row 업데이트됨
                 log.info("  ✓ {} - 성공", teach.getCourse().getName());
-                teachRepository.save(teach);  // 변경사항 즉시 저장
+                // 최신 데이터 다시 조회 (enrolledCount, remainCount 업데이트)
+                teach = teachRepository.findById(teach.getId()).orElseThrow();
                 return new RegistrationResult(true, null, teach);
             }
 
+            // 실패: 정원 초과 (remainCount가 0이었음)
             log.info("  ✗ {} - 실패 (정원 초과)", teach.getCourse().getName());
             lastFailReason = "정원 초과";
             current = current.getSubElement();
