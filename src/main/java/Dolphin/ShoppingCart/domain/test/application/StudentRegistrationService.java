@@ -38,17 +38,7 @@ public class StudentRegistrationService {
         List<Teach> enrolledTeaches = new ArrayList<>();
 
         for (BucketElement element : task.bucket.getBucketElements()) {
-            RegistrationResult result = tryRegisterCourse(element, enrolledTeaches);
-
-            // History 즉시 저장 (실제 수강신청과 동일)
-            BucketElement managedElement = entityManager.getReference(BucketElement.class, element.getId());
-            History history = History.create(
-                    managedElement,
-                    test,
-                    result.enrolled,
-                    result.failReason
-            );
-            historyRepository.save(history);
+            RegistrationResult result = tryRegisterCourseWithHistory(element, enrolledTeaches, test);
 
             if (result.enrolled) {
                 successCount++;
@@ -61,7 +51,7 @@ public class StudentRegistrationService {
         return new StudentRegistrationResult(successCount, failCount);
     }
 
-    private RegistrationResult tryRegisterCourse(BucketElement element, List<Teach> enrolledTeaches) {
+    private RegistrationResult tryRegisterCourseWithHistory(BucketElement element, List<Teach> enrolledTeaches, Test test) {
         BucketElement current = element;
         String lastFailReason = null;
 
@@ -74,6 +64,8 @@ public class StudentRegistrationService {
             if (hasCourseIdConflict(teach, enrolledTeaches)) {
                 log.info("  ✗ {} - 실패 (동일 과목 중복 신청)", teach.getCourse().getName());
                 lastFailReason = "이미 동일한 과목을 신청했습니다";
+                // 실패 History 저장
+                saveHistory(current, test, false, lastFailReason);
                 current = current.getSubElement();
 
                 if (current != null) {
@@ -86,6 +78,8 @@ public class StudentRegistrationService {
             if (hasTimeConflict(teach, enrolledTeaches)) {
                 log.info("  ✗ {} - 실패 (시간대 충돌)", teach.getCourse().getName());
                 lastFailReason = "신청하려는 시간대에 이미 과목이 있습니다";
+                // 실패 History 저장
+                saveHistory(current, test, false, lastFailReason);
                 current = current.getSubElement();
 
                 if (current != null) {
@@ -102,12 +96,16 @@ public class StudentRegistrationService {
                 log.info("  ✓ {} - 성공", teach.getCourse().getName());
                 // 최신 데이터 다시 조회 (enrolledCount, remainCount 업데이트)
                 teach = teachRepository.findById(teach.getId()).orElseThrow();
+                // 성공 History 저장
+                saveHistory(current, test, true, null);
                 return new RegistrationResult(true, null, teach);
             }
 
             // 실패: 정원 초과 (remainCount가 0이었음)
             log.info("  ✗ {} - 실패 (정원 초과)", teach.getCourse().getName());
             lastFailReason = "정원 초과";
+            // 실패 History 저장
+            saveHistory(current, test, false, lastFailReason);
             current = current.getSubElement();
 
             if (current != null) {
@@ -117,6 +115,12 @@ public class StudentRegistrationService {
 
         // 마지막으로 시도한 과목의 실패 사유 반환
         return new RegistrationResult(false, lastFailReason != null ? lastFailReason : "정원 초과", null);
+    }
+
+    private void saveHistory(BucketElement element, Test test, boolean success, String failReason) {
+        BucketElement managedElement = entityManager.getReference(BucketElement.class, element.getId());
+        History history = History.create(managedElement, test, success, failReason);
+        historyRepository.save(history);
     }
 
     private boolean hasCourseIdConflict(Teach newTeach, List<Teach> enrolledTeaches) {
