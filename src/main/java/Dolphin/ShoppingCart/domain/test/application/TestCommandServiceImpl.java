@@ -145,7 +145,7 @@ public class TestCommandServiceImpl implements TestCommandService {
         log.info("학생 {} ({}초) 처리 중", student.getStudentName(), student.getAvgReactionTime());
 
         try {
-            Thread.sleep((long) (student.getAvgReactionTime() * 1000));
+            Thread.sleep((long) (student.getAvgReactionTime() * 1));
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             log.error("대기 중 인터럽트 발생", e);
